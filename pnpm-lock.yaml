@@ -8,12 +8,24 @@ importers:
 
   .:
     dependencies:
+      '@lexical/code':
+        specifier: ^0.32.1
+        version: 0.32.1
+      '@lexical/link':
+        specifier: ^0.32.1
+        version: 0.32.1
+      '@lexical/list':
+        specifier: ^0.32.1
+        version: 0.32.1
       '@lexical/markdown':
         specifier: ^0.32.1
         version: 0.32.1
       '@lexical/react':
         specifier: ^0.32.1
         version: 0.32.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(yjs@13.6.27)
+      '@lexical/rich-text':
+        specifier: ^0.32.1
+        version: 0.32.1
       '@prisma/client':
         specifier: ^6.10.1
         version: 6.10.1(prisma@6.10.1(typescript@5.8.3))(typescript@5.8.3)
