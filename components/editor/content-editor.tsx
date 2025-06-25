@@ -1,16 +1,15 @@
-"use client";
-
+import { Textarea } from "@/components/ui/textarea";
 import { useEditorStore } from "@/lib/hooks/useEditorStore";
-import { Textarea } from "./ui/textarea";
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 
-interface EditorProps {
-  documentId: string;
+interface ContentEditorProps {
   initialContent?: string;
 }
 
-export default function Editor({ documentId, initialContent }: EditorProps) {
-  const { setDocumentId, setMarkdownContent } = useEditorStore();
+export default function ContentEditor({ initialContent }: ContentEditorProps) {
+  const setMarkdownContent = useEditorStore(
+    (state) => state.setMarkdownContent
+  );
 
   const onChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -18,10 +17,6 @@ export default function Editor({ documentId, initialContent }: EditorProps) {
     },
     [setMarkdownContent]
   );
-
-  useEffect(() => {
-    setDocumentId(documentId);
-  }, [documentId, setDocumentId]);
 
   return (
     <Textarea

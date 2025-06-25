@@ -10,10 +10,10 @@ import { toast } from "sonner";
 
 export default function Editor() {
   const trpc = useTRPC();
-  const setContentMutation = useMutation(
-    trpc.document.setContent.mutationOptions()
+  const setDocumentMutation = useMutation(
+    trpc.document.setDocument.mutationOptions()
   );
-  const { markdownContent, documentId } = useEditorStore();
+  const { documentId, title, markdownContent } = useEditorStore();
 
   const saveDocument = useCallback(async () => {
     if (!documentId) {
@@ -21,8 +21,9 @@ export default function Editor() {
       return;
     }
     try {
-      await setContentMutation.mutateAsync({
+      await setDocumentMutation.mutateAsync({
         id: documentId,
+        title: title,
         content: markdownContent,
       });
       toast.success("Document saved successfully!");
@@ -30,10 +31,10 @@ export default function Editor() {
       console.error("Error saving document:", error);
       toast.error("Failed to save document.");
     }
-  }, [setContentMutation]);
+  }, [setDocumentMutation]);
 
   return (
-    <Button onClick={saveDocument} disabled={setContentMutation.isPending}>
+    <Button onClick={saveDocument} disabled={setDocumentMutation.isPending}>
       <Save />
     </Button>
   );

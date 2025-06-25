@@ -1,4 +1,4 @@
-import Editor from "@/components/editor";
+import Editor from "@/components/editor/editor";
 import SaveButton from "@/components/save-button";
 import { caller } from "@/lib/trpc/server";
 
@@ -8,7 +8,11 @@ export default async function Home() {
 
   return (
     <main className="max-w-3xl mx-auto p-4">
-      <Editor documentId={documentId} initialContent={document.content} />
+      <Editor
+        documentId={documentId}
+        initialTitle={document.title}
+        initialContent={document.content}
+      />
       <div className="flex justify-end mt-6">
         <SaveButton />
       </div>
