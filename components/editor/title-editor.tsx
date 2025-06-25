@@ -18,6 +18,12 @@ export default function TitleEditor({ initialTitle }: TitleEditorProps) {
     [setTitle, setTitleAction]
   );
 
+  useEffect(() => {
+    if (initialTitle) {
+      setTitleAction(initialTitle);
+    }
+  }, [initialTitle]);
+
   return (
     <Input
       value={title}

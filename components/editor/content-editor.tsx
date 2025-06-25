@@ -1,6 +1,6 @@
 import { Textarea } from "@/components/ui/textarea";
 import { useEditorStore } from "@/lib/hooks/useEditorStore";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 
 interface ContentEditorProps {
   initialContent?: string;
@@ -17,6 +17,12 @@ export default function ContentEditor({ initialContent }: ContentEditorProps) {
     },
     [setMarkdownContent]
   );
+
+  useEffect(() => {
+    if (initialContent) {
+      setMarkdownContent(initialContent);
+    }
+  }, [initialContent, setMarkdownContent]);
 
   return (
     <Textarea
