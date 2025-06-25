@@ -23,6 +23,9 @@ export default function Editor() {
         console.error("No document ID set.");
         return;
       }
+      if (isSaved) {
+        return;
+      }
       try {
         await setDocumentMutation.mutateAsync({
           id: documentId,
