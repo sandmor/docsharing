@@ -1,6 +1,6 @@
 import { useEditorStore } from "@/lib/hooks/useEditorStore";
 import { Input } from "../ui/input";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 
 interface TitleEditorProps {
   initialTitle?: string;
@@ -17,12 +17,6 @@ export default function TitleEditor({ initialTitle }: TitleEditorProps) {
     },
     [setTitle, setTitleAction]
   );
-
-  useEffect(() => {
-    if (initialTitle) {
-      setTitleAction(initialTitle);
-    }
-  }, [initialTitle]);
 
   return (
     <Input

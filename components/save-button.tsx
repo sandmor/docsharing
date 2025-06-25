@@ -13,7 +13,8 @@ export default function Editor() {
   const setDocumentMutation = useMutation(
     trpc.document.setDocument.mutationOptions()
   );
-  const { documentId, title, markdownContent } = useEditorStore();
+  const { documentId, currentState, isSaved, saveCurrentState } =
+    useEditorStore();
 
   const saveDocument = useCallback(async () => {
     if (!documentId) {
@@ -23,9 +24,10 @@ export default function Editor() {
     try {
       await setDocumentMutation.mutateAsync({
         id: documentId,
-        title: title,
-        content: markdownContent,
+        title: currentState.title,
+        content: currentState.markdownContent,
       });
+      saveCurrentState();
       toast.success("Document saved successfully!");
     } catch (error) {
       console.error("Error saving document:", error);
@@ -34,7 +36,10 @@ export default function Editor() {
   }, [setDocumentMutation]);
 
   return (
-    <Button onClick={saveDocument} disabled={setDocumentMutation.isPending}>
+    <Button
+      onClick={saveDocument}
+      disabled={isSaved || setDocumentMutation.isPending}
+    >
       <Save />
     </Button>
   );

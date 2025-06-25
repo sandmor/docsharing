@@ -12,7 +12,7 @@ import { LinkNode } from "@lexical/link";
 import { MarkdownShortcutPlugin } from "@lexical/react/LexicalMarkdownShortcutPlugin";
 import { $convertToMarkdownString, TRANSFORMERS } from "@lexical/markdown";
 import { useEditorStore } from "@/lib/hooks/useEditorStore";
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 import { toast } from "sonner";
 import { InitialContentPlugin } from "./plugins/initial-content";
 
@@ -96,12 +96,6 @@ export default function ContentEditor({ initialContent }: ContentEditorProps) {
     },
     [setMarkdownContent]
   );
-
-  useEffect(() => {
-    if (initialContent) {
-      setMarkdownContent(initialContent);
-    }
-  }, [initialContent, setMarkdownContent]);
 
   const initialConfig = {
     namespace: "ContentEditor",
