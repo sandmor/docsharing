@@ -14,6 +14,15 @@ export const documentRouter = createTRPCRouter({
       }
       return doc;
     }),
+  setContent: baseProcedure
+    .input(z.object({ id: z.string(), content: z.string() }))
+    .mutation(async ({ input }) => {
+      const updatedDoc = await prisma.document.update({
+        where: { id: input.id },
+        data: { content: input.content },
+      });
+      return updatedDoc;
+    }),
 });
 
 export type DocumentRouter = typeof documentRouter;

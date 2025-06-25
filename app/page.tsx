@@ -1,8 +1,17 @@
-import { Textarea } from "@/components/ui/textarea";
+import Editor from "@/components/editor";
+import SaveButton from "@/components/save-button";
 import { caller } from "@/lib/trpc/server";
 
 export default async function Home() {
-  const document = await caller.document.getById({ id: "1" });
+  const documentId = "1";
+  const document = await caller.document.getById({ id: documentId });
 
-  return <Textarea defaultValue={document.content} />;
+  return (
+    <main className="max-w-3xl mx-auto p-4">
+      <Editor documentId={documentId} initialContent={document.content} />
+      <div className="flex justify-end mt-6">
+        <SaveButton />
+      </div>
+    </main>
+  );
 }
