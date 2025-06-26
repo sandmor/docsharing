@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { Tooltip, TooltipTrigger, TooltipContent } from "./tooltip";
 import { SVGViewer } from "./svg-viewer";
 import { renderAndCopyMermaidAsPng, renderMermaidToSvg } from "@/lib/mermaid";
-import { useId, useState, useEffect } from "react";
+import { useId, useState, useEffect, useRef } from "react";
 
 interface TopBarButtonProps {
   icon: React.ReactNode;
@@ -55,6 +55,8 @@ export const CodeBlock = ({ language, value }: CodeBlockProps) => {
   const [showDiagram, setShowDiagram] = useState(true);
   const [svgContent, setSvgContent] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [contentHeight, setContentHeight] = useState<number | null>(null);
+  const codeRef = useRef<HTMLDivElement>(null);
 
   const isMermaid = language === "mermaid";
 
@@ -71,6 +73,15 @@ export const CodeBlock = ({ language, value }: CodeBlockProps) => {
         });
     }
   }, [id, value, isMermaid, showDiagram]);
+
+  useEffect(() => {
+    if (codeRef.current) {
+      const height = codeRef.current.getBoundingClientRect().height;
+      if (height > 0 && height !== contentHeight) {
+        setContentHeight(height);
+      }
+    }
+  }, [codeRef.current, value, showDiagram]);
 
   const handleCopy = async () => {
     if (isMermaid && showDiagram) {
@@ -114,30 +125,46 @@ export const CodeBlock = ({ language, value }: CodeBlockProps) => {
   );
 
   const renderContent = () => {
-    if (isMermaid && showDiagram) {
-      if (error) {
-        return <div className="p-4 text-red-500">{error}</div>;
-      }
-      if (svgContent) {
-        return <SVGViewer id={id} svgContent={svgContent} />;
-      }
-      return <div className="p-4">Rendering diagram...</div>;
-    }
-
     return (
-      <SyntaxHighlighter
-        style={codeTheme as any}
-        language={language}
-        PreTag="div"
-        customStyle={{
-          backgroundColor: "transparent",
-          padding: "1rem",
-          margin: "0",
-          border: "none",
-        }}
-      >
-        {value}
-      </SyntaxHighlighter>
+      <>
+        <div
+          ref={codeRef}
+          style={{
+            position: isMermaid && showDiagram ? "absolute" : "static",
+            left: isMermaid && showDiagram ? "-9999px" : "auto",
+            width: "100%",
+            overflow: "auto",
+          }}
+        >
+          <SyntaxHighlighter
+            style={codeTheme as any}
+            language={language}
+            PreTag="div"
+            customStyle={{
+              backgroundColor: "transparent",
+              padding: "1rem",
+              margin: "0",
+              border: "none",
+            }}
+          >
+            {value}
+          </SyntaxHighlighter>
+        </div>
+
+        {isMermaid && showDiagram && (
+          <div
+            style={{ height: contentHeight ? `${contentHeight}px` : "auto" }}
+          >
+            {error ? (
+              <div className="p-4 text-red-500">{error}</div>
+            ) : svgContent ? (
+              <SVGViewer id={id} svgContent={svgContent} />
+            ) : (
+              <div className="p-4">Rendering diagram...</div>
+            )}
+          </div>
+        )}
+      </>
     );
   };
 
