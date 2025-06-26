@@ -2,13 +2,15 @@
 
 import { useTRPC } from "@/lib/trpc/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Eraser, Link, Plus } from "lucide-react";
+import { Eraser, Link as LinkIcon, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import ConfirmationDialog from "../confirmation-dialog";
+import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 interface SidebarProps {
   currentDocumentId: string;
@@ -111,11 +113,19 @@ export default function Sidebar({ currentDocumentId }: SidebarProps) {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.15 }}
-                className="flex items-center group rounded hover:bg-gray-100 p-2"
+                className={cn(
+                  "flex items-center group rounded hover:bg-gray-100",
+                  {
+                    "bg-gray-200": doc.id === currentDocumentId,
+                  }
+                )}
               >
-                <a href={`/documents/${doc.id}`} className="flex-1 block">
+                <Link
+                  href={`/documents/${doc.id}`}
+                  className="flex-1 block p-2"
+                >
                   {doc.title}
-                </a>
+                </Link>
                 <button
                   onClick={() => handleDeleteClick(doc.id, doc.title)}
                   className="p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
@@ -128,7 +138,7 @@ export default function Sidebar({ currentDocumentId }: SidebarProps) {
                   className="p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                   title="Copy shareable link"
                 >
-                  <Link className="h-4 w-4 text-gray-500 hover:text-gray-700" />
+                  <LinkIcon className="h-4 w-4 text-gray-500 hover:text-gray-700" />
                 </button>
               </motion.li>
             ))}
