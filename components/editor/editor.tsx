@@ -16,7 +16,7 @@ export default function Editor({
   initialTitle,
   initialContent,
 }: EditorProps) {
-  const { setDocumentId, setTitle, setMarkdownContent, saveCurrentState } =
+  const { setDocumentId, setTitle, setMarkdownContent, updateSavedState } =
     useEditorStore();
 
   useEffect(() => {
@@ -27,7 +27,10 @@ export default function Editor({
     if (initialContent) {
       setMarkdownContent(initialContent);
     }
-    saveCurrentState();
+    updateSavedState({
+      title: initialTitle || "",
+      markdownContent: initialContent || "",
+    });
   }, [documentId, setDocumentId]);
 
   return (

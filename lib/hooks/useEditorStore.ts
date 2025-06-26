@@ -18,7 +18,7 @@ interface EditorState {
   setTitle: (title: string) => void;
   setDocumentId: (id: string | null) => void;
   setMarkdownContent: (content: string) => void;
-  saveCurrentState: () => void;
+  updateSavedState: (savedState: DocumentState) => void;
 }
 
 export const useEditorStore = create<EditorState>((set, get) => ({
@@ -56,9 +56,14 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       };
     }),
 
-  saveCurrentState: () =>
-    set((state) => ({
-      savedState: { ...state.currentState },
-      isSaved: true,
-    })),
+  updateSavedState: (savedState) =>
+    set((state) => {
+      const newSavedState = { ...savedState };
+      const isSaved = areStatesEqual(state.currentState, newSavedState);
+      return {
+        ...state,
+        savedState: newSavedState,
+        isSaved,
+      };
+    }),
 }));
