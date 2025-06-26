@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 
 interface SidebarProps {
-  currentDocumentId: string;
+  currentDocumentId?: string;
 }
 
 export default function Sidebar({ currentDocumentId }: SidebarProps) {

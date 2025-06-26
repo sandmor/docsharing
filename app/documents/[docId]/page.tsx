@@ -4,8 +4,6 @@ import SaveButton from "@/components/save-button";
 import { caller, getQueryClient, trpc } from "@/lib/trpc/server";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 
-export const dynamic = "force-dynamic";
-
 export default async function DocumentPage({
   params,
 }: {
