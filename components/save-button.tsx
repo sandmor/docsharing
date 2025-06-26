@@ -7,7 +7,6 @@ import { useCallback, useEffect } from "react";
 import { useTRPC } from "@/lib/trpc/client";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import debounce from "lodash.debounce";
 
 export default function Editor() {
   const trpc = useTRPC();
@@ -44,15 +43,20 @@ export default function Editor() {
         toast.error("Failed to save document.");
       }
     },
-    [setDocumentMutation]
+    [documentId, isSaved, setDocumentMutation, updateSavedState, currentState]
   );
 
   useEffect(() => {
-    if (!isSaved) {
-      debounce(() => {
-        saveDocument(false);
-      }, 3000)();
+    if (isSaved) {
+      return;
     }
+    const handler = setTimeout(() => {
+      saveDocument(false);
+    }, 1000);
+
+    return () => {
+      clearTimeout(handler);
+    };
   }, [isSaved, saveDocument]);
 
   return (
