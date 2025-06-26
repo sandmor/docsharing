@@ -62,24 +62,22 @@ export const SVGViewer = memo(
         const svg = d3.select(svgRef.current);
         svg.on(".zoom", null);
 
-        const g = svg.select("g").node()
-          ? svg.select<SVGGElement>("g")
-          : svg.append("g");
-
-        if (g.selectAll("*").empty()) {
-          const svgNode = svg.node();
-          const gNode = g.node();
-          if (svgNode && gNode) {
-            while (svgNode.firstChild && svgNode.firstChild !== gNode) {
-              gNode.appendChild(svgNode.firstChild);
-            }
-          }
+        const g = svg.append("g");
+        // Move all of svg's children into the new group.
+        while (svg.node()!.firstChild !== g.node()) {
+          g.node()!.appendChild(svg.node()!.firstChild!);
         }
 
+        // Remove any existing width/height attributes and ensure full container coverage
         svg
           .attr("width", "100%")
           .attr("height", "100%")
-          .style("display", "block");
+          .attr("preserveAspectRatio", "xMidYMid meet")
+          .style("display", "block")
+          .style("width", "100%")
+          .style("height", "100%")
+          .style("max-width", "100%")
+          .style("max-height", "100%");
 
         const zoom = d3
           .zoom<SVGSVGElement, unknown>()
@@ -143,9 +141,26 @@ export const SVGViewer = memo(
       containerRef.current.innerHTML = svgContent;
       const svgElement = containerRef.current.querySelector("svg");
       if (svgElement) {
+        // Capture original dimensions before removing attributes
+        const originalWidth = svgElement.getAttribute("width") || "100";
+        const originalHeight = svgElement.getAttribute("height") || "100";
+
+        // Remove any existing width/height attributes that might constrain the SVG
+        svgElement.removeAttribute("width");
+        svgElement.removeAttribute("height");
+
+        // If there's no viewBox, try to create one from the original dimensions
+        if (!svgElement.hasAttribute("viewBox")) {
+          svgElement.setAttribute(
+            "viewBox",
+            `0 0 ${originalWidth} ${originalHeight}`
+          );
+          console.warn(
+            "No viewBox found. Using original dimensions to create one."
+          );
+        }
+
         svgRef.current = svgElement as SVGSVGElement;
-        // Remove the viewBox to allow the SVG to fill the container
-        svgElement.removeAttribute("viewBox");
         setupPanZoom(isMaximized);
       }
 
@@ -182,6 +197,7 @@ export const SVGViewer = memo(
             className
           )}
           id={uniqueId}
+          style={{ minWidth: "100%", minHeight: "100%" }}
         />
 
         {/* Floating Action Buttons */}

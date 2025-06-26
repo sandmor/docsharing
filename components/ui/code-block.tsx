@@ -2,17 +2,28 @@
 
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { codeTheme } from "@/lib/code-theme";
-import { Copy, Eye, Code } from "lucide-react";
-import { Button } from "./button";
+import { Copy, Eye, Code, Download } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { Tooltip, TooltipTrigger, TooltipContent } from "./tooltip";
 import { SVGViewer } from "./svg-viewer";
-import { renderAndCopyMermaidAsPng, renderMermaidToSvg } from "@/lib/mermaid";
+import {
+  renderAndCopyMermaidAsPng,
+  renderMermaidToSvg,
+  convertMermaidSvgToPng,
+} from "@/lib/mermaid";
 import { useId, useState, useEffect, useRef } from "react";
 
 interface TopBarButtonProps {
   icon: React.ReactNode;
-  onClick: () => void;
+  onClick?: () => void;
   tooltip: string;
 }
 
@@ -99,6 +110,52 @@ export const CodeBlock = ({ language, value }: CodeBlockProps) => {
     }
   };
 
+  const handleDownloadPng = async () => {
+    if (isMermaid && svgContent) {
+      try {
+        const pngDataUrl = await convertMermaidSvgToPng(svgContent);
+        const a = document.createElement("a");
+        a.href = pngDataUrl;
+        a.download = `mermaid-diagram-${id}.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        toast.success("PNG downloaded successfully!");
+      } catch (error) {
+        console.error("Failed to download PNG:", error);
+        toast.error("Failed to download PNG.");
+      }
+    }
+  };
+
+  const handleDownloadSvg = () => {
+    if (isMermaid && svgContent) {
+      const blob = new Blob([svgContent], { type: "image/svg+xml" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `mermaid-diagram-${id}.svg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success("SVG downloaded successfully!");
+    }
+  };
+
+  const handleDownloadCode = () => {
+    const blob = new Blob([value], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${language}-code-${id}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast.success(`${displayName} code downloaded successfully!`);
+  };
+
   const displayName = formatLanguageName(language);
 
   const topBarButtons = (
@@ -121,6 +178,38 @@ export const CodeBlock = ({ language, value }: CodeBlockProps) => {
         onClick={handleCopy}
         tooltip={isMermaid && showDiagram ? "Copy diagram as PNG" : "Copy code"}
       />
+      {isMermaid ? (
+        <DropdownMenu>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-full">
+                  <Download className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+            </TooltipTrigger>
+            <TooltipContent>Download options</TooltipContent>
+          </Tooltip>
+          <DropdownMenuContent>
+            <DropdownMenuItem onClick={() => handleDownloadPng()}>
+              Download PNG
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleDownloadSvg()}>
+              Download SVG
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => handleDownloadCode()}>
+              Download Mermaid code
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ) : (
+        <TopBarButton
+          icon={<Download className="h-4 w-4" />}
+          onClick={handleDownloadCode}
+          tooltip={`Download ${displayName} code`}
+        />
+      )}
     </div>
   );
 

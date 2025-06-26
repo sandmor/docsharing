@@ -35,7 +35,6 @@ export const renderMermaidToSvg = async (
       `mermaid-${id}-${Math.random().toString(36).substring(2, 11)}`,
       diagramText
     );
-    console.log("Mermaid diagram rendered successfully:", result);
     return result;
   } catch (error) {
     console.error("Mermaid rendering error:", error);
