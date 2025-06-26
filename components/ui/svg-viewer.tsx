@@ -4,24 +4,22 @@ import { useEffect, useRef, memo } from "react";
 import * as d3 from "d3";
 import { ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { renderMermaidToSvg } from "@/lib/mermaid";
 import { Button } from "./button";
 
-interface MermaidDiagramProps {
+interface SVGViewerProps {
   id: string;
-  children: string;
+  svgContent: string;
   className?: string;
 }
 
-export const MermaidDiagram = memo(
-  ({ id, children: diagramText, className }: MermaidDiagramProps) => {
+export const SVGViewer = memo(
+  ({ id, svgContent, className }: SVGViewerProps) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const svgRef = useRef<SVGSVGElement | null>(null);
     const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(
       null
     );
-    const originalViewBoxRef = useRef<string>("");
-    const uniqueId = `mermaid-${id}`;
+    const uniqueId = `svg-viewer-${id}`;
 
     const handleZoomIn = () => {
       if (!svgRef.current || !zoomRef.current) return;
@@ -44,41 +42,10 @@ export const MermaidDiagram = memo(
       svg
         .transition()
         .duration(750)
-        .call(zoomRef.current.transform, d3.zoomIdentity)
-        .on("end", () => {
-          // Reset viewBox to original
-          svg.attr("viewBox", originalViewBoxRef.current);
-        });
+        .call(zoomRef.current.transform, d3.zoomIdentity);
     };
 
     useEffect(() => {
-      const renderMermaid = async () => {
-        if (!containerRef.current || !diagramText) return;
-
-        try {
-          const { svg } = await renderMermaidToSvg(id, diagramText);
-          if (containerRef.current) {
-            // Set the SVG content
-            containerRef.current.innerHTML = svg;
-
-            // Get the SVG element and store reference
-            const svgElement = containerRef.current.querySelector(
-              "svg"
-            ) as SVGSVGElement;
-            if (svgElement) {
-              svgRef.current = svgElement;
-              setupPanZoom();
-            }
-          }
-        } catch (error) {
-          console.error("Mermaid rendering error:", error);
-          if (containerRef.current) {
-            containerRef.current.innerHTML =
-              '<div class="text-red-500 flex items-center justify-center h-full">Diagram rendering error</div>';
-          }
-        }
-      };
-
       const setupPanZoom = () => {
         if (!svgRef.current) return;
 
@@ -90,8 +57,10 @@ export const MermaidDiagram = memo(
         // Move all children of SVG into the new <g>
         const svgNode = svg.node();
         const gNode = g.node();
-        while (svgNode?.firstChild && svgNode.firstChild !== gNode) {
-          gNode?.appendChild(svgNode.firstChild);
+        if (svgNode && gNode) {
+          while (svgNode.firstChild && svgNode.firstChild !== gNode) {
+            gNode.appendChild(svgNode.firstChild);
+          }
         }
 
         // Set SVG to fill container
@@ -135,7 +104,19 @@ export const MermaidDiagram = memo(
         svg.style("user-select", "none");
       };
 
-      renderMermaid();
+      if (!containerRef.current || !svgContent) return;
+
+      // Set the SVG content
+      containerRef.current.innerHTML = svgContent;
+
+      // Get the SVG element and store reference
+      const svgElement = containerRef.current.querySelector(
+        "svg"
+      ) as SVGSVGElement;
+      if (svgElement) {
+        svgRef.current = svgElement;
+        setupPanZoom();
+      }
 
       return () => {
         if (containerRef.current) {
@@ -143,7 +124,7 @@ export const MermaidDiagram = memo(
         }
         svgRef.current = null;
       };
-    }, [diagramText, id]);
+    }, [svgContent, id]);
 
     return (
       <div className="relative w-full h-full">
@@ -193,4 +174,4 @@ export const MermaidDiagram = memo(
     );
   }
 );
-MermaidDiagram.displayName = "MermaidDiagram";
+SVGViewer.displayName = "SVGViewer";

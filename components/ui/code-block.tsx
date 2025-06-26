@@ -6,9 +6,9 @@ import { Copy, Eye, Code } from "lucide-react";
 import { Button } from "./button";
 import { toast } from "sonner";
 import { Tooltip, TooltipTrigger, TooltipContent } from "./tooltip";
-import { MermaidDiagram } from "./mermaid-diagram";
-import { renderAndCopyMermaidAsPng } from "@/lib/mermaid";
-import { useId, useState } from "react";
+import { SVGViewer } from "./svg-viewer";
+import { renderAndCopyMermaidAsPng, renderMermaidToSvg } from "@/lib/mermaid";
+import { useId, useState, useEffect } from "react";
 
 interface TopBarButtonProps {
   icon: React.ReactNode;
@@ -53,6 +53,24 @@ const formatLanguageName = (language: string): string => {
 export const CodeBlock = ({ language, value }: CodeBlockProps) => {
   const id = useId();
   const [showDiagram, setShowDiagram] = useState(true);
+  const [svgContent, setSvgContent] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  const isMermaid = language === "mermaid";
+
+  useEffect(() => {
+    if (isMermaid && showDiagram) {
+      renderMermaidToSvg(id, value)
+        .then(({ svg }) => {
+          setSvgContent(svg);
+          setError(null);
+        })
+        .catch((err) => {
+          console.error("Mermaid rendering error:", err);
+          setError("Failed to render Mermaid diagram.");
+        });
+    }
+  }, [id, value, isMermaid, showDiagram]);
 
   const handleCopy = async () => {
     if (isMermaid && showDiagram) {
@@ -71,7 +89,6 @@ export const CodeBlock = ({ language, value }: CodeBlockProps) => {
   };
 
   const displayName = formatLanguageName(language);
-  const isMermaid = language === "mermaid";
 
   const topBarButtons = (
     <div className="flex items-center gap-1">
@@ -98,7 +115,13 @@ export const CodeBlock = ({ language, value }: CodeBlockProps) => {
 
   const renderContent = () => {
     if (isMermaid && showDiagram) {
-      return <MermaidDiagram id={id}>{value}</MermaidDiagram>;
+      if (error) {
+        return <div className="p-4 text-red-500">{error}</div>;
+      }
+      if (svgContent) {
+        return <SVGViewer id={id} svgContent={svgContent} />;
+      }
+      return <div className="p-4">Rendering diagram...</div>;
     }
 
     return (
