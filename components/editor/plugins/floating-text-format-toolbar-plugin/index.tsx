@@ -34,7 +34,6 @@ import {
   Strikethrough,
   Subscript,
   Superscript,
-  CaseSensitive,
   Code,
   Link,
 } from "lucide-react";
@@ -52,9 +51,6 @@ function TextFormatFloatingToolbar({
   isBold,
   isItalic,
   isUnderline,
-  isUppercase,
-  isLowercase,
-  isCapitalize,
   isCode,
   isStrikethrough,
   isSubscript,
@@ -67,9 +63,6 @@ function TextFormatFloatingToolbar({
   isCode: boolean;
   isItalic: boolean;
   isLink: boolean;
-  isUppercase: boolean;
-  isLowercase: boolean;
-  isCapitalize: boolean;
   isStrikethrough: boolean;
   isSubscript: boolean;
   isSuperscript: boolean;
@@ -410,10 +403,8 @@ function useFloatingTextFormatToolbar(
   }, [editor, updatePopup]);
 
   if (!isText) {
-    console.log("FloatingTextFormatToolbarPlugin: not rendering toolbar");
     return null;
   }
-  console.log("FloatingTextFormatToolbarPlugin: rendering toolbar");
 
   return createPortal(
     <TextFormatFloatingToolbar
@@ -422,9 +413,6 @@ function useFloatingTextFormatToolbar(
       isLink={isLink}
       isBold={isBold}
       isItalic={isItalic}
-      isUppercase={isUppercase}
-      isLowercase={isLowercase}
-      isCapitalize={isCapitalize}
       isStrikethrough={isStrikethrough}
       isSubscript={isSubscript}
       isSuperscript={isSuperscript}

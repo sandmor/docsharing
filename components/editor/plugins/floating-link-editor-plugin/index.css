@@ -1,0 +1,22 @@
+.link-editor {
+  display: flex;
+  align-items: center;
+  background: oklch(var(--background, 1 0 0));
+  background-color: white;
+  border: 1px solid oklch(var(--border, 0.92 0.004 286.32));
+  border-color: #e2e8f0;
+  padding: 4px;
+  vertical-align: middle;
+  position: absolute;
+  top: 0;
+  left: 0;
+  max-width: 400px;
+  z-index: 10;
+  opacity: 0;
+  box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  transition: opacity 0.5s;
+  height: auto;
+  will-change: transform;
+  gap: 2px;
+}

@@ -14,8 +14,10 @@ import { $convertToMarkdownString, TRANSFORMERS } from "@lexical/markdown";
 import { useEditorStore } from "@/lib/hooks/useEditorStore";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
+import { LinkPlugin } from "@lexical/react/LexicalLinkPlugin";
 import { InitialContentPlugin } from "./plugins/initial-content";
 import FloatingTextFormatToolbarPlugin from "./plugins/floating-text-format-toolbar-plugin";
+import FloatingLinkEditorPlugin from "./plugins/floating-link-editor-plugin";
 
 const theme = {
   paragraph: "mb-2",
@@ -88,6 +90,7 @@ export default function ContentEditor({ initialContent }: ContentEditorProps) {
   );
   const [floatingAnchorElem, setFloatingAnchorElem] =
     useState<HTMLDivElement | null>(null);
+  const [isLinkEditMode, setIsLinkEditMode] = useState(false);
 
   const onRef = (_floatingAnchorElem: HTMLDivElement) => {
     if (_floatingAnchorElem !== null) {
@@ -138,12 +141,20 @@ export default function ContentEditor({ initialContent }: ContentEditorProps) {
           />
         </div>
         <HistoryPlugin />
+        <LinkPlugin
+          attributes={{ rel: "noopener noreferrer", target: "_blank" }}
+        />
         <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
         {floatingAnchorElem && (
           <>
+            <FloatingLinkEditorPlugin
+              anchorElem={floatingAnchorElem}
+              isLinkEditMode={isLinkEditMode}
+              setIsLinkEditMode={setIsLinkEditMode}
+            />
             <FloatingTextFormatToolbarPlugin
               anchorElem={floatingAnchorElem}
-              setIsLinkEditMode={() => {}}
+              setIsLinkEditMode={setIsLinkEditMode}
             />
           </>
         )}
