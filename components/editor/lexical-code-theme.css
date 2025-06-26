@@ -1,0 +1,82 @@
+/* Lexical code highlighting theme using CSS variables */
+.lexical-code-comment {
+  color: var(--lexical-code-comment);
+  font-style: italic;
+}
+
+.lexical-code-punctuation {
+  color: var(--lexical-code-punctuation);
+}
+
+.lexical-code-property {
+  color: var(--lexical-code-property);
+}
+
+.lexical-code-tag {
+  color: var(--lexical-code-tag);
+}
+
+.lexical-code-constant {
+  color: var(--lexical-code-constant);
+}
+
+.lexical-code-deleted {
+  color: var(--lexical-code-deleted);
+  font-style: italic;
+}
+
+.lexical-code-boolean {
+  color: var(--lexical-code-boolean);
+}
+
+.lexical-code-number {
+  color: var(--lexical-code-number);
+}
+
+.lexical-code-selector {
+  color: var(--lexical-code-selector);
+  font-style: italic;
+}
+
+.lexical-code-attr-name {
+  color: var(--lexical-code-attr-name);
+  font-style: italic;
+}
+
+.lexical-code-string {
+  color: var(--lexical-code-string);
+}
+
+.lexical-code-operator {
+  color: var(--lexical-code-operator);
+}
+
+.lexical-code-entity {
+  color: var(--lexical-code-entity);
+  cursor: help;
+}
+
+.lexical-code-variable {
+  color: var(--lexical-code-variable);
+}
+
+.lexical-code-atrule {
+  color: var(--lexical-code-atrule);
+}
+
+.lexical-code-function {
+  color: var(--lexical-code-function);
+}
+
+.lexical-code-keyword {
+  color: var(--lexical-code-keyword);
+}
+
+.lexical-code-regex {
+  color: var(--lexical-code-regex);
+}
+
+.lexical-code-important {
+  color: var(--lexical-code-important);
+  font-weight: bold;
+}

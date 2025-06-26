@@ -18,7 +18,9 @@ import { LinkPlugin } from "@lexical/react/LexicalLinkPlugin";
 import { InitialContentPlugin } from "./plugins/initial-content";
 import FloatingTextFormatToolbarPlugin from "./plugins/floating-text-format-toolbar-plugin";
 import FloatingLinkEditorPlugin from "./plugins/floating-link-editor-plugin";
-import { lexicalCodeTheme } from "@/lib/code-theme";
+import { lexicalCodeTheme, lexicalCodeThemeVarsAuto } from "@/lib/code-theme";
+import "./lexical-code-theme.css";
+import CodeHighlightPlugin from "./plugins/code-hightlight";
 
 const theme = {
   paragraph: "mb-2",
@@ -50,7 +52,6 @@ const theme = {
     code: "bg-gray-100 rounded px-1 py-0.5 font-mono text-sm",
   },
 };
-console.log("Lexical theme:", lexicalCodeTheme);
 
 interface ContentEditorProps {
   initialContent?: string;
@@ -100,7 +101,10 @@ export default function ContentEditor({ initialContent }: ContentEditorProps) {
   };
 
   return (
-    <div className="border border-gray-300 rounded-lg">
+    <div
+      className="border border-gray-300 rounded-lg"
+      style={lexicalCodeThemeVarsAuto}
+    >
       <LexicalComposer initialConfig={initialConfig}>
         <div className="relative">
           <RichTextPlugin
@@ -116,6 +120,7 @@ export default function ContentEditor({ initialContent }: ContentEditorProps) {
         <LinkPlugin
           attributes={{ rel: "noopener noreferrer", target: "_blank" }}
         />
+        <CodeHighlightPlugin />
         <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
         {floatingAnchorElem && (
           <>
