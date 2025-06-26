@@ -1,46 +1,29 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import mermaid from "mermaid";
 import { cn } from "@/lib/utils";
+import { initializeMermaid, renderMermaidToSvg } from "@/lib/mermaid";
 
 interface MermaidDiagramProps {
   id: string;
   children: string;
   className?: string;
-  theme?: "default" | "neutral" | "dark" | "forest" | "base";
 }
 
 export const MermaidDiagram = ({
   id,
   children: diagramText,
   className,
-  theme = "default",
 }: MermaidDiagramProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const uniqueId = `mermaid-${id}`;
-
-  useEffect(() => {
-    mermaid.initialize({
-      startOnLoad: false,
-      theme,
-      logLevel: 5,
-      flowchart: {
-        htmlLabels: true,
-        curve: "basis",
-      },
-    });
-  }, [theme]);
 
   useEffect(() => {
     const renderMermaid = async () => {
       if (!containerRef.current || !diagramText) return;
 
       try {
-        const { svg } = await mermaid.render(
-          `mermaid-${id}-${Math.random().toString(36).substring(2, 11)}`,
-          diagramText
-        );
+        const { svg } = await renderMermaidToSvg(id, diagramText);
         if (containerRef.current) {
           containerRef.current.innerHTML = svg;
         }
@@ -59,7 +42,7 @@ export const MermaidDiagram = ({
         containerRef.current.innerHTML = "";
       }
     };
-  }, [diagramText, theme, id]);
+  }, [diagramText, id]);
 
   return (
     <div

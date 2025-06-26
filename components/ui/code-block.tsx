@@ -7,6 +7,7 @@ import { Button } from "./button";
 import { toast } from "sonner";
 import { Tooltip, TooltipTrigger, TooltipContent } from "./tooltip";
 import { MermaidDiagram } from "./mermaid-diagram";
+import { renderAndCopyMermaidAsPng } from "@/lib/mermaid";
 import { useId, useState } from "react";
 
 interface TopBarButtonProps {
@@ -53,9 +54,20 @@ export const CodeBlock = ({ language, value }: CodeBlockProps) => {
   const id = useId();
   const [showDiagram, setShowDiagram] = useState(true);
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(value);
-    toast.success("Copied to clipboard!");
+  const handleCopy = async () => {
+    if (isMermaid && showDiagram) {
+      try {
+        await renderAndCopyMermaidAsPng(id, value);
+        toast.success("Diagram copied to clipboard as PNG!");
+      } catch (error) {
+        console.error("Failed to copy diagram:", error);
+        toast.error("Failed to copy diagram. Copying code instead.");
+        navigator.clipboard.writeText(value);
+      }
+    } else {
+      navigator.clipboard.writeText(value);
+      toast.success("Copied to clipboard!");
+    }
   };
 
   const displayName = formatLanguageName(language);
@@ -79,7 +91,7 @@ export const CodeBlock = ({ language, value }: CodeBlockProps) => {
       <TopBarButton
         icon={<Copy className="h-4 w-4" />}
         onClick={handleCopy}
-        tooltip="Copy code"
+        tooltip={isMermaid && showDiagram ? "Copy diagram as PNG" : "Copy code"}
       />
     </div>
   );
