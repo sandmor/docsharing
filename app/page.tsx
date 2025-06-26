@@ -2,6 +2,8 @@ import Editor from "@/components/editor/editor";
 import SaveButton from "@/components/save-button";
 import { caller } from "@/lib/trpc/server";
 
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
   const documentId = "1";
   const document = await caller.document.getById({ id: documentId });
