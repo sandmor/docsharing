@@ -35,7 +35,7 @@ export default function Editor({
 
   return (
     <div>
-      <TitleEditor initialTitle={initialTitle} />
+      <TitleEditor initialTitle={initialTitle} documentId={documentId} />
       <ContentEditor initialContent={initialContent} />
     </div>
   );
