@@ -12,9 +12,10 @@ import { LinkNode } from "@lexical/link";
 import { MarkdownShortcutPlugin } from "@lexical/react/LexicalMarkdownShortcutPlugin";
 import { $convertToMarkdownString, TRANSFORMERS } from "@lexical/markdown";
 import { useEditorStore } from "@/lib/hooks/useEditorStore";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { InitialContentPlugin } from "./plugins/initial-content";
+import FloatingTextFormatToolbarPlugin from "./plugins/floating-text-format-toolbar-plugin";
 
 const theme = {
   paragraph: "mb-2",
@@ -85,6 +86,14 @@ export default function ContentEditor({ initialContent }: ContentEditorProps) {
   const setMarkdownContent = useEditorStore(
     (state) => state.setMarkdownContent
   );
+  const [floatingAnchorElem, setFloatingAnchorElem] =
+    useState<HTMLDivElement | null>(null);
+
+  const onRef = (_floatingAnchorElem: HTMLDivElement) => {
+    if (_floatingAnchorElem !== null) {
+      setFloatingAnchorElem(_floatingAnchorElem);
+    }
+  };
 
   const onChange = useCallback(
     (editorState: EditorState) => {
@@ -121,13 +130,23 @@ export default function ContentEditor({ initialContent }: ContentEditorProps) {
         <div className="relative">
           <RichTextPlugin
             contentEditable={
-              <ContentEditable className="p-4 min-h-[500px] outline-none text-gray-900 resize-none leading-relaxed" />
+              <div ref={onRef}>
+                <ContentEditable className="p-4 min-h-[500px] outline-none text-gray-900 resize-none leading-relaxed" />
+              </div>
             }
             ErrorBoundary={LexicalErrorBoundary}
           />
         </div>
         <HistoryPlugin />
         <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
+        {floatingAnchorElem && (
+          <>
+            <FloatingTextFormatToolbarPlugin
+              anchorElem={floatingAnchorElem}
+              setIsLinkEditMode={() => {}}
+            />
+          </>
+        )}
         {initialContent !== undefined && (
           <InitialContentPlugin initialContent={initialContent} />
         )}
