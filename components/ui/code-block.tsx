@@ -2,10 +2,34 @@
 
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { codeTheme } from "@/lib/code-theme";
-import { Copy } from "lucide-react";
+import { Copy, Eye, Code } from "lucide-react";
 import { Button } from "./button";
 import { toast } from "sonner";
 import { Tooltip, TooltipTrigger, TooltipContent } from "./tooltip";
+import { MermaidDiagram } from "./mermaid-diagram";
+import { useId, useState } from "react";
+
+interface TopBarButtonProps {
+  icon: React.ReactNode;
+  onClick: () => void;
+  tooltip: string;
+}
+
+const TopBarButton = ({ icon, onClick, tooltip }: TopBarButtonProps) => (
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={onClick}
+        className="rounded-full"
+      >
+        {icon}
+      </Button>
+    </TooltipTrigger>
+    <TooltipContent>{tooltip}</TooltipContent>
+  </Tooltip>
+);
 
 interface CodeBlockProps {
   language: string;
@@ -13,7 +37,7 @@ interface CodeBlockProps {
 }
 
 const formatLanguageName = (language: string): string => {
-  const acronyms = ["CSS", "HTML", "JSON", "XML", "YAML", "SQL", "PHP"];
+  const acronyms = ["CSS", "HTML", "JSON", "XML", "TOML", "YAML", "SQL", "PHP"];
   if (acronyms.includes(language.toUpperCase())) {
     return language.toUpperCase();
   }
@@ -26,31 +50,46 @@ const formatLanguageName = (language: string): string => {
 };
 
 export const CodeBlock = ({ language, value }: CodeBlockProps) => {
+  const id = useId();
+  const [showDiagram, setShowDiagram] = useState(true);
+
   const handleCopy = () => {
     navigator.clipboard.writeText(value);
     toast.success("Copied to clipboard!");
   };
 
   const displayName = formatLanguageName(language);
+  const isMermaid = language === "mermaid";
 
-  return (
-    <div className="rounded-md border bg-card text-sm my-4">
-      <div className="flex items-center justify-between px-4 py-2 border-b">
-        <span className="text-muted-foreground">{displayName}</span>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleCopy}
-              className="rounded-full"
-            >
-              <Copy className="h-4 w-4" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Copy code</TooltipContent>
-        </Tooltip>
-      </div>
+  const topBarButtons = (
+    <div className="flex items-center gap-1">
+      {isMermaid && (
+        <TopBarButton
+          icon={
+            showDiagram ? (
+              <Code className="h-4 w-4" />
+            ) : (
+              <Eye className="h-4 w-4" />
+            )
+          }
+          onClick={() => setShowDiagram(!showDiagram)}
+          tooltip={showDiagram ? "Show code" : "Show diagram"}
+        />
+      )}
+      <TopBarButton
+        icon={<Copy className="h-4 w-4" />}
+        onClick={handleCopy}
+        tooltip="Copy code"
+      />
+    </div>
+  );
+
+  const renderContent = () => {
+    if (isMermaid && showDiagram) {
+      return <MermaidDiagram id={id}>{value}</MermaidDiagram>;
+    }
+
+    return (
       <SyntaxHighlighter
         style={codeTheme as any}
         language={language}
@@ -64,6 +103,16 @@ export const CodeBlock = ({ language, value }: CodeBlockProps) => {
       >
         {value}
       </SyntaxHighlighter>
+    );
+  };
+
+  return (
+    <div className="rounded-md border bg-card text-sm my-4">
+      <div className="flex items-center justify-between px-4 py-2 border-b">
+        <span className="text-muted-foreground">{displayName}</span>
+        {topBarButtons}
+      </div>
+      {renderContent()}
     </div>
   );
 };
