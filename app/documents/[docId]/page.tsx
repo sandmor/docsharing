@@ -22,7 +22,7 @@ export default async function DocumentPage({
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       <div className="flex h-full overflow-hidden">
-        <Sidebar />
+        <Sidebar currentDocumentId={documentId} />
         <main className="flex-1 max-w-3xl mx-auto p-4 overflow-y-auto">
           <Editor
             documentId={documentId}

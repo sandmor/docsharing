@@ -42,6 +42,20 @@ export const documentRouter = createTRPCRouter({
       });
       return updatedDoc;
     }),
+  deleteDocument: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const userId = ctx.auth.userId;
+      const deletedDoc = await prisma.document.deleteMany({
+        where: { id: input.id, userId },
+      });
+      if (deletedDoc.count === 0) {
+        throw new Error(
+          "Document not found or you do not have permission to delete it"
+        );
+      }
+      return { success: true };
+    }),
 });
 
 export type DocumentRouter = typeof documentRouter;

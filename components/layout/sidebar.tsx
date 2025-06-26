@@ -1,15 +1,21 @@
 "use client";
 
 import { useTRPC } from "@/lib/trpc/client";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { Link, Plus } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Eraser, Link, Plus } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "../ui/button";
-import { useCallback } from "react";
+import { Button } from "@/components/ui/button";
+import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
+import ConfirmationDialog from "../confirmation-dialog";
 
-export default function Sidebar() {
+interface SidebarProps {
+  currentDocumentId: string;
+}
+
+export default function Sidebar({ currentDocumentId }: SidebarProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const trpc = useTRPC();
   const documents = useQuery(
     trpc.document.getAllDocumentsForUser.queryOptions()
@@ -17,6 +23,15 @@ export default function Sidebar() {
   const newDocumentMutation = useMutation(
     trpc.document.newDocument.mutationOptions()
   );
+  const deleteDocumentMutation = useMutation(
+    trpc.document.deleteDocument.mutationOptions()
+  );
+
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<{
+    title: string;
+    id: string;
+  } | null>(null);
 
   const documentList = documents.data || [];
 
@@ -43,6 +58,44 @@ export default function Sidebar() {
     });
   }, [newDocumentMutation]);
 
+  const handleDeleteClick = useCallback((docId: string, docTitle: string) => {
+    setItemToDelete({ title: docTitle, id: docId });
+    setIsDialogOpen(true);
+  }, []);
+
+  const handleConfirmDelete = useCallback(() => {
+    if (!itemToDelete) return;
+    deleteDocumentMutation.mutate(
+      { id: itemToDelete.id },
+      {
+        onSuccess: () => {
+          toast.success(`Document "${itemToDelete.title}" deleted`);
+          if (currentDocumentId === itemToDelete.id) {
+            router.push("/documents");
+          }
+          const queryKey =
+            trpc.document.getAllDocumentsForUser.queryOptions().queryKey;
+          queryClient.setQueryData(queryKey, (oldData: any) => {
+            if (!oldData) return oldData;
+            return oldData.filter((doc: any) => doc.id !== itemToDelete.id);
+          });
+          setIsDialogOpen(false);
+          setItemToDelete(null);
+        },
+        onError: () => {
+          toast.error(`Failed to delete document "${itemToDelete.title}"`);
+          setIsDialogOpen(false);
+          setItemToDelete(null);
+        },
+      }
+    );
+  }, [itemToDelete, deleteDocumentMutation, documents]);
+
+  const handleCloseDialog = useCallback(() => {
+    setIsDialogOpen(false);
+    setItemToDelete(null);
+  }, []);
+
   return (
     <aside className="w-64 h-full bg-gray-50 border-r border-gray-200 overflow-y-auto flex flex-col">
       <div className="flex-1 p-4">
@@ -57,6 +110,13 @@ export default function Sidebar() {
                 {doc.title}
               </a>
               <button
+                onClick={() => handleDeleteClick(doc.id, doc.title)}
+                className="p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                title="Delete document"
+              >
+                <Eraser className="h-4 w-4 text-gray-500 hover:text-red-600" />
+              </button>
+              <button
                 onClick={() => handleShareClick(doc.id)}
                 className="p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                 title="Copy shareable link"
@@ -66,6 +126,16 @@ export default function Sidebar() {
             </li>
           ))}
         </ul>
+        <ConfirmationDialog
+          isOpen={isDialogOpen}
+          onConfirm={handleConfirmDelete}
+          onClose={handleCloseDialog}
+          variant="destructive"
+          title="Delete Document"
+          description={`Are you sure you want to delete ${itemToDelete?.title}? This action cannot be undone.`}
+          cancelText="Cancel"
+          confirmText="Delete"
+        />
       </div>
       <div className="p-4 border-t border-gray-200">
         <Button onClick={handleNewDocument} className="w-full">
