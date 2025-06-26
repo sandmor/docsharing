@@ -4,6 +4,7 @@ import { useTRPC } from "@/lib/trpc/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Eraser, Link, Plus } from "lucide-react";
 import { toast } from "sonner";
+import { motion, AnimatePresence } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -101,30 +102,37 @@ export default function Sidebar({ currentDocumentId }: SidebarProps) {
       <div className="flex-1 p-4">
         <h2 className="text-lg font-semibold mb-4">Documents</h2>
         <ul className="space-y-2">
-          {documentList.map((doc) => (
-            <li
-              key={doc.id}
-              className="flex items-center group rounded hover:bg-gray-100 p-2"
-            >
-              <a href={`/documents/${doc.id}`} className="flex-1 block">
-                {doc.title}
-              </a>
-              <button
-                onClick={() => handleDeleteClick(doc.id, doc.title)}
-                className="p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                title="Delete document"
+          <AnimatePresence initial={false}>
+            {documentList.map((doc) => (
+              <motion.li
+                key={doc.id}
+                layout
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
+                className="flex items-center group rounded hover:bg-gray-100 p-2"
               >
-                <Eraser className="h-4 w-4 text-gray-500 hover:text-red-600" />
-              </button>
-              <button
-                onClick={() => handleShareClick(doc.id)}
-                className="p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                title="Copy shareable link"
-              >
-                <Link className="h-4 w-4 text-gray-500 hover:text-gray-700" />
-              </button>
-            </li>
-          ))}
+                <a href={`/documents/${doc.id}`} className="flex-1 block">
+                  {doc.title}
+                </a>
+                <button
+                  onClick={() => handleDeleteClick(doc.id, doc.title)}
+                  className="p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                  title="Delete document"
+                >
+                  <Eraser className="h-4 w-4 text-gray-500 hover:text-red-600" />
+                </button>
+                <button
+                  onClick={() => handleShareClick(doc.id)}
+                  className="p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                  title="Copy shareable link"
+                >
+                  <Link className="h-4 w-4 text-gray-500 hover:text-gray-700" />
+                </button>
+              </motion.li>
+            ))}
+          </AnimatePresence>
         </ul>
         <ConfirmationDialog
           isOpen={isDialogOpen}
