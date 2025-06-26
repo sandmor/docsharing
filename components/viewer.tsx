@@ -3,6 +3,7 @@
 import ReactMarkdown from "react-markdown";
 import { useTRPC } from "@/lib/trpc/client";
 import { useQuery } from "@tanstack/react-query";
+import { CodeBlock } from "./ui/code-block";
 
 interface ViewerProps {
   docId: string;
@@ -24,7 +25,25 @@ export default function Viewer({ docId }: ViewerProps) {
   return (
     <div>
       <h1 className="text-2xl font-bold mb-4">{document.data.title}</h1>
-      <ReactMarkdown>{document.data.content}</ReactMarkdown>
+      <ReactMarkdown
+        components={{
+          code({ node, className, children, ...props }) {
+            const match = /language-(\w+)/.exec(className || "");
+            return match ? (
+              <CodeBlock
+                language={match[1]}
+                value={String(children).replace(/\n$/, "")}
+              />
+            ) : (
+              <code className={className} {...props}>
+                {children}
+              </code>
+            );
+          },
+        }}
+      >
+        {document.data.content}
+      </ReactMarkdown>
     </div>
   );
 }

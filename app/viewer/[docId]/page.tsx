@@ -16,7 +16,7 @@ export default async function ViewerPage({
   );
 
   return (
-    <main className="max-w-3xl mx-auto p-4">
+    <main className="max-w-[1200px] mx-auto p-4">
       <HydrationBoundary state={dehydrate(queryClient)}>
         <Viewer docId={documentId} />
       </HydrationBoundary>
