@@ -22,6 +22,17 @@ export const documentRouter = createTRPCRouter({
     });
     return documents;
   }),
+  newDocument: protectedProcedure.mutation(async ({ ctx }) => {
+    const userId = ctx.auth.userId;
+    const newDoc = await prisma.document.create({
+      data: {
+        title: "New Document",
+        content: "",
+        userId,
+      },
+    });
+    return newDoc;
+  }),
   setDocument: publicProcedure
     .input(z.object({ id: z.string(), title: z.string(), content: z.string() }))
     .mutation(async ({ input }) => {
