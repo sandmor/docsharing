@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { publicProcedure, createTRPCRouter } from "../init";
+import { publicProcedure, createTRPCRouter, protectedProcedure } from "../init";
 import { prisma } from "@/lib/prisma";
 
 export const documentRouter = createTRPCRouter({
@@ -14,6 +14,14 @@ export const documentRouter = createTRPCRouter({
       }
       return doc;
     }),
+  getAllDocumentsForUser: protectedProcedure.query(async ({ ctx }) => {
+    const userId = ctx.auth.userId;
+    const documents = await prisma.document.findMany({
+      where: { userId },
+      orderBy: { updatedAt: "desc" },
+    });
+    return documents;
+  }),
   setDocument: publicProcedure
     .input(z.object({ id: z.string(), title: z.string(), content: z.string() }))
     .mutation(async ({ input }) => {

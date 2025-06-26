@@ -1,22 +1,49 @@
-import Editor from "@/components/editor/editor";
-import SaveButton from "@/components/save-button";
-import { caller } from "@/lib/trpc/server";
-
-export const dynamic = "force-dynamic";
+import { Button } from "@/components/ui/button";
+import { ArrowRight, FileText, Link, Share2 } from "lucide-react";
+import Linker from "next/link";
 
 export default async function Home() {
-  const documentId = "1";
-  const document = await caller.document.getById({ id: documentId });
-
   return (
-    <main className="max-w-3xl mx-auto p-4">
-      <Editor
-        documentId={documentId}
-        initialTitle={document.title}
-        initialContent={document.content}
-      />
-      <div className="flex justify-end mt-6">
-        <SaveButton />
+    <main className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] p-8">
+      <div className="text-center">
+        <h1 className="text-4xl md:text-6xl font-bold tracking-tighter mb-4">
+          Create & Share Documents
+        </h1>
+        <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
+          A simple way to create documents and generate shareable links for
+          others to view them.
+        </p>
+        <div className="mt-8">
+          <Linker href="/documents">
+            <Button size="lg">
+              Get Started <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+          </Linker>
+        </div>
+      </div>
+
+      <div className="mt-24 grid md:grid-cols-3 gap-12 text-center">
+        <div className="flex flex-col items-center">
+          <FileText className="h-12 w-12 text-blue-500 mb-4" />
+          <h3 className="text-xl font-semibold mb-2">Create Documents</h3>
+          <p className="text-gray-500">
+            Easily write and format your documents with a rich text editor.
+          </p>
+        </div>
+        <div className="flex flex-col items-center">
+          <Link className="h-12 w-12 text-green-500 mb-4" />
+          <h3 className="text-xl font-semibold mb-2">Generate Links</h3>
+          <p className="text-gray-500">
+            Create unique and shareable links for each of your documents.
+          </p>
+        </div>
+        <div className="flex flex-col items-center">
+          <Share2 className="h-12 w-12 text-purple-500 mb-4" />
+          <h3 className="text-xl font-semibold mb-2">Share with Others</h3>
+          <p className="text-gray-500">
+            Share your documents with anyone, anywhere, with a simple link.
+          </p>
+        </div>
       </div>
     </main>
   );
