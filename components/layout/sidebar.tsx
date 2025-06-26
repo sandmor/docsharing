@@ -6,8 +6,10 @@ import { Link, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { useCallback } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Sidebar() {
+  const router = useRouter();
   const trpc = useTRPC();
   const documents = useQuery(
     trpc.document.getAllDocumentsForUser.queryOptions()
@@ -32,7 +34,8 @@ export default function Sidebar() {
   const handleNewDocument = useCallback(() => {
     newDocumentMutation.mutate(undefined, {
       onSuccess: (newDoc) => {
-        window.location.href = `/documents/${newDoc.id}`;
+        toast.success("New document created");
+        router.push(`/documents/${newDoc.id}`);
       },
       onError: () => {
         toast.error("Failed to create new document");

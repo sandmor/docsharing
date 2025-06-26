@@ -53,7 +53,7 @@ export default function RootLayout({
                 <UserButton />
               </SignedIn>
             </header>
-            <div className="flex h-full overflow-hidden">{children}</div>
+            {children}
             <Toaster />
           </body>
         </html>

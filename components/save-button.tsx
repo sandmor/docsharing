@@ -51,7 +51,7 @@ export default function Editor() {
     if (!isSaved) {
       debounce(() => {
         saveDocument(false);
-      }, 1000)();
+      }, 3000)();
     }
   }, [isSaved, saveDocument]);
 

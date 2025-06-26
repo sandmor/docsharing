@@ -21,17 +21,19 @@ export default async function DocumentPage({
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <Sidebar />
-      <main className="flex-1 max-w-3xl mx-auto p-4 overflow-y-auto">
-        <Editor
-          documentId={documentId}
-          initialTitle={document.title}
-          initialContent={document.content}
-        />
-        <div className="flex justify-end mt-6">
-          <SaveButton />
-        </div>
-      </main>
+      <div className="flex h-full overflow-hidden">
+        <Sidebar />
+        <main className="flex-1 max-w-3xl mx-auto p-4 overflow-y-auto">
+          <Editor
+            documentId={documentId}
+            initialTitle={document.title}
+            initialContent={document.content}
+          />
+          <div className="flex justify-end mt-6">
+            <SaveButton />
+          </div>
+        </main>
+      </div>
     </HydrationBoundary>
   );
 }
