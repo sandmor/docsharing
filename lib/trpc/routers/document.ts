@@ -1,9 +1,9 @@
 import { z } from "zod";
-import { baseProcedure, createTRPCRouter } from "../init";
+import { publicProcedure, createTRPCRouter } from "../init";
 import { prisma } from "@/lib/prisma";
 
 export const documentRouter = createTRPCRouter({
-  getById: baseProcedure
+  getById: publicProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ input }) => {
       const doc = await prisma.document.findUnique({
@@ -14,7 +14,7 @@ export const documentRouter = createTRPCRouter({
       }
       return doc;
     }),
-  setDocument: baseProcedure
+  setDocument: publicProcedure
     .input(z.object({ id: z.string(), title: z.string(), content: z.string() }))
     .mutation(async ({ input }) => {
       const updatedDoc = await prisma.document.update({
