@@ -1,5 +1,4 @@
 import type { JSX } from "react";
-import "./index.css";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { mergeRegister } from "@lexical/utils";
 import {
@@ -64,7 +63,7 @@ function Toolbar({
   openLinkEditor: () => void;
 }): JSX.Element {
   return (
-    <div className="toolbar">
+    <div className="flex mb-px bg-white p-1 rounded-t-lg vertical-align-middle border-b border-b-gray-200">
       {editor.isEditable() && (
         <>
           <Button
