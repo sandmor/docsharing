@@ -3,7 +3,7 @@
 import ReactMarkdown from "react-markdown";
 import { useTRPC } from "@/lib/trpc/client";
 import { useQuery } from "@tanstack/react-query";
-import { CodeBlock } from "./ui/code-block";
+import { CodeBlock } from "@/components/ui/code-block";
 import { useMemo } from "react";
 
 interface ViewerProps {
@@ -13,16 +13,6 @@ interface ViewerProps {
 export default function Viewer({ docId }: ViewerProps) {
   const trpc = useTRPC();
   const document = useQuery(trpc.document.getById.queryOptions({ id: docId }));
-
-  if (document.isLoading) {
-    return <div>Loading...</div>;
-  }
-  if (document.isError) {
-    return <div>Error loading document</div>;
-  }
-  if (!document.data) {
-    return <div>Document not found</div>;
-  }
 
   const components = useMemo(
     () => ({
@@ -86,12 +76,19 @@ export default function Viewer({ docId }: ViewerProps) {
     []
   );
 
+  if (document.isLoading) {
+    return <div>Loading...</div>;
+  }
+  if (document.isError) {
+    return <div>Error loading document</div>;
+  }
+  if (!document.data) {
+    return <div>Document not found</div>;
+  }
+
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-4">{document.data.title}</h1>
-      <ReactMarkdown components={components}>
-        {document.data.content}
-      </ReactMarkdown>
-    </div>
+    <ReactMarkdown components={components}>
+      {document.data.content}
+    </ReactMarkdown>
   );
 }

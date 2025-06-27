@@ -1,20 +1,12 @@
+"use client";
+
 import { useEditorStore } from "@/lib/hooks/useEditorStore";
-import { Input } from "../ui/input";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import { useTRPC } from "@/lib/trpc/client";
 import { useQueryClient } from "@tanstack/react-query";
 
-interface TitleEditorProps {
-  initialTitle?: string;
-  documentId?: string;
-}
-
-export default function TitleEditor({
-  initialTitle,
-  documentId,
-}: TitleEditorProps) {
-  const setTitleAction = useEditorStore((state) => state.setTitle);
-  const [title, setTitle] = useState(initialTitle || "");
+export default function TitleEditor() {
+  const { currentState, setTitle, documentId } = useEditorStore();
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
@@ -22,7 +14,6 @@ export default function TitleEditor({
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const newTitle = e.target.value;
       setTitle(newTitle);
-      setTitleAction(newTitle);
 
       // Update the documents list cache optimistically
       if (documentId) {
@@ -37,15 +28,20 @@ export default function TitleEditor({
         });
       }
     },
-    [setTitle, setTitleAction, documentId, trpc, queryClient]
+    [setTitle, documentId, trpc, queryClient]
   );
 
+  if (!currentState) {
+    // The document is still loading, show nothing
+    return null;
+  }
+
   return (
-    <Input
-      value={title}
+    <input
+      value={currentState.title}
       onChange={handleChange}
       placeholder="Enter document title"
-      className="mb-4"
+      className="border-0 shadow-none outline-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-xl font-medium placeholder:text-gray-400 w-full"
     />
   );
 }

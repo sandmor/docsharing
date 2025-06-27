@@ -1,4 +1,6 @@
-import Viewer from "@/components/viewer";
+import DynamicHeader from "@/components/layout/dynamic-header";
+import ViewerTitle from "@/components/viewer/title";
+import Viewer from "@/components/viewer/viewer";
 import { getQueryClient, trpc } from "@/lib/trpc/server";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 
@@ -16,10 +18,15 @@ export default async function ViewerPage({
   );
 
   return (
-    <main className="max-w-[1200px] mx-auto p-4">
+    <div className="min-h-screen grid grid-rows-[auto_1fr]">
       <HydrationBoundary state={dehydrate(queryClient)}>
-        <Viewer docId={documentId} />
+        <DynamicHeader>
+          <ViewerTitle docId={documentId} />
+        </DynamicHeader>
+        <main className="max-w-[1200px] mx-auto p-4">
+          <Viewer docId={documentId} />
+        </main>
       </HydrationBoundary>
-    </main>
+    </div>
   );
 }

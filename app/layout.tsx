@@ -3,15 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { TRPCReactProvider } from "@/lib/trpc/client";
 import { Toaster } from "@/components/ui/sonner";
-import {
-  ClerkProvider,
-  SignInButton,
-  SignUpButton,
-  SignedIn,
-  SignedOut,
-  UserButton,
-} from "@clerk/nextjs";
-import { Button } from "@/components/ui/button";
+import { ClerkProvider } from "@clerk/nextjs";
+import DynamicHeader from "@/components/layout/dynamic-header";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,21 +31,8 @@ export default function RootLayout({
       <TRPCReactProvider>
         <html lang="en">
           <body
-            className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen grid grid-rows-[auto_1fr]`}
+            className={`${geistSans.variable} ${geistMono.variable} antialiased`}
           >
-            <header className="flex justify-end items-center p-4 gap-4 h-16 border-b border-gray-200">
-              <SignedOut>
-                <SignInButton>
-                  <Button variant="secondary">Sign In</Button>
-                </SignInButton>
-                <SignUpButton>
-                  <Button>Sign Up</Button>
-                </SignUpButton>
-              </SignedOut>
-              <SignedIn>
-                <UserButton />
-              </SignedIn>
-            </header>
             {children}
             <Toaster />
           </body>

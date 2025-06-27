@@ -3,7 +3,6 @@
 import { useEditorStore } from "@/lib/hooks/useEditorStore";
 import { useEffect } from "react";
 import ContentEditor from "./content-editor";
-import TitleEditor from "./title-editor";
 
 interface EditorProps {
   documentId: string;
@@ -35,7 +34,6 @@ export default function Editor({
 
   return (
     <div>
-      <TitleEditor initialTitle={initialTitle} documentId={documentId} />
       <ContentEditor initialContent={initialContent} />
     </div>
   );
