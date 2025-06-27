@@ -57,9 +57,13 @@ const theme = {
 
 interface ContentEditorProps {
   initialContent?: string;
+  scrollerRef?: React.RefObject<HTMLDivElement | null>;
 }
 
-export default function ContentEditor({ initialContent }: ContentEditorProps) {
+export default function ContentEditor({
+  initialContent,
+  scrollerRef,
+}: ContentEditorProps) {
   const setMarkdownContent = useEditorStore(
     (state) => state.setMarkdownContent
   );
@@ -109,12 +113,12 @@ export default function ContentEditor({ initialContent }: ContentEditorProps) {
       style={lexicalCodeThemeVarsAuto}
     >
       <LexicalComposer initialConfig={initialConfig}>
-        <ToolbarPlugin />
+        <ToolbarPlugin scrollerRef={scrollerRef} />
         <div className="relative flex-1 flex flex-col">
           <RichTextPlugin
             contentEditable={
-              <div ref={onRef} className="flex-1 flex flex-col">
-                <ContentEditable className="p-4 outline-none text-gray-900 resize-none leading-relaxed flex-1" />
+              <div ref={onRef} className="flex-1">
+                <ContentEditable className="p-4 outline-none text-gray-900 resize-none leading-relaxed" />
               </div>
             }
             ErrorBoundary={LexicalErrorBoundary}

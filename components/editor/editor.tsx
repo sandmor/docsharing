@@ -1,7 +1,7 @@
 "use client";
 
 import { useEditorStore } from "@/lib/hooks/useEditorStore";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import ContentEditor from "./content-editor";
 import AutoSaveObserver from "@/components/editor/auto-save-observer";
 import { useTRPC } from "@/lib/trpc/client";
@@ -25,6 +25,8 @@ export default function Editor({ documentId }: EditorProps) {
 
   const { setDocumentId, setTitle, setMarkdownContent, updateSavedState } =
     useEditorStore();
+
+  const scrollerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setDocumentId(documentId);
@@ -51,8 +53,14 @@ export default function Editor({ documentId }: EditorProps) {
   }, [title]);
 
   return (
-    <div className="flex-1 flex flex-col">
-      <ContentEditor initialContent={initialContent} />
+    <div
+      className="absolute inset-0 flex flex-col overflow-auto p-4"
+      ref={scrollerRef}
+    >
+      <ContentEditor
+        initialContent={initialContent}
+        scrollerRef={scrollerRef}
+      />
       <AutoSaveObserver />
     </div>
   );

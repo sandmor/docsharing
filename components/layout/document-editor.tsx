@@ -63,12 +63,8 @@ export default async function DocumentEditor({
               </div>
             )}
           </DynamicHeader>
-          <main className="flex flex-col flex-1 p-4 overflow-y-auto">
-            {documentId && (
-              <>
-                <Editor documentId={documentId} />
-              </>
-            )}
+          <main className="relative flex-1">
+            {documentId && <Editor documentId={documentId} />}
             {children}
           </main>
         </div>

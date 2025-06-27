@@ -13,7 +13,7 @@ import {
   UNDO_COMMAND,
   REDO_COMMAND,
 } from "lexical";
-import { Dispatch, useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import * as React from "react";
 import {
   Bold,
@@ -48,6 +48,7 @@ function Toolbar({
   canUndo,
   canRedo,
   openLinkEditor,
+  scrollOffset,
 }: {
   editor: LexicalEditor;
   isBold: boolean;
@@ -61,9 +62,16 @@ function Toolbar({
   canUndo: boolean;
   canRedo: boolean;
   openLinkEditor: () => void;
+  scrollOffset: number;
 }): JSX.Element {
   return (
-    <div className="flex mb-px bg-white p-1 rounded-t-lg vertical-align-middle border-b border-b-gray-200">
+    <div
+      className="sticky top-0 z-10 flex mb-px bg-white p-1 rounded-t-lg vertical-align-middle border-b border-b-gray-200"
+      style={{
+        transform: `translateY(${scrollOffset}px)`,
+        willChange: "transform", // Optimize for animations
+      }}
+    >
       {editor.isEditable() && (
         <>
           <Button
@@ -196,7 +204,11 @@ function Toolbar({
   );
 }
 
-export default function ToolbarPlugin(): JSX.Element | null {
+export default function ToolbarPlugin({
+  scrollerRef,
+}: {
+  scrollerRef?: React.RefObject<HTMLDivElement | null>;
+}): JSX.Element | null {
   const [editor] = useLexicalComposerContext();
   const [isLink, setIsLink] = useState(false);
   const [isBold, setIsBold] = useState(false);
@@ -209,6 +221,9 @@ export default function ToolbarPlugin(): JSX.Element | null {
   const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo] = useState(false);
   const [isLinkEditorOpen, setIsLinkEditorOpen] = useState(false);
+  const [scrollOffset, setScrollOffset] = useState(0);
+
+  const rafRef = useRef<number | null>(null);
 
   const $updateToolbar = useCallback(() => {
     const selection = $getSelection();
@@ -230,6 +245,30 @@ export default function ToolbarPlugin(): JSX.Element | null {
       }
     }
   }, []);
+
+  // Handle scroll with requestAnimationFrame for smooth updates
+  const handleScroll = useCallback(() => {
+    rafRef.current = requestAnimationFrame(() => {
+      const currentScrollY = scrollerRef?.current?.scrollTop || 0;
+      const newOffset = -Math.min(16, currentScrollY);
+      setScrollOffset(newOffset);
+    });
+  }, []);
+
+  useEffect(() => {
+    // Add scroll listener
+    if (scrollerRef && scrollerRef.current) {
+      scrollerRef.current.addEventListener("scroll", handleScroll, {
+        passive: true,
+      });
+
+      return () => {
+        if (scrollerRef.current) {
+          scrollerRef.current.removeEventListener("scroll", handleScroll);
+        }
+      };
+    }
+  }, [handleScroll, scrollerRef]);
 
   useEffect(() => {
     return mergeRegister(
@@ -284,6 +323,7 @@ export default function ToolbarPlugin(): JSX.Element | null {
         canUndo={canUndo}
         canRedo={canRedo}
         openLinkEditor={openLinkEditor}
+        scrollOffset={scrollOffset}
       />
       <LinkEditorDialog
         editor={editor}
