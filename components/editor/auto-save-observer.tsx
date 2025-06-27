@@ -58,5 +58,28 @@ export default function AutoSaveObserver() {
     };
   }, [isSaved, saveDocument]);
 
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (!isSaved) {
+        saveDocument(false);
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [isSaved, saveDocument]);
+
+  useEffect(() => {
+    return () => {
+      // When the component unmounts, save the document if it is not saved
+      if (!isSaved) {
+        saveDocument(false);
+      }
+    };
+  }, [isSaved, saveDocument]);
+
   return null;
 }
