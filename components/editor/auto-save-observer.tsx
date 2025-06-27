@@ -1,85 +1,85 @@
 "use client";
 
 import { useEditorStore } from "@/lib/hooks/useEditorStore";
-
-import { useCallback, useEffect } from "react";
+import { useEffect } from "react";
 import { useTRPC } from "@/lib/trpc/client";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 export default function AutoSaveObserver() {
   const trpc = useTRPC();
-  const setDocumentMutation = useMutation(
-    trpc.document.setDocument.mutationOptions()
-  );
   const { documentId, currentState, isSaved, updateSavedState } =
     useEditorStore();
 
-  const saveDocument = useCallback(
-    async (reportSuccess: boolean) => {
-      if (!documentId) {
-        console.error("No document ID set.");
-        return;
-      }
-      if (isSaved) {
-        return;
-      }
-      try {
-        const stateToSave = {
-          ...currentState,
-        };
-        await setDocumentMutation.mutateAsync({
-          id: documentId,
-          title: stateToSave.title,
-          content: stateToSave.markdownContent,
-        });
-        updateSavedState(stateToSave);
-        if (reportSuccess) {
-          toast.success("Document saved successfully!");
-        }
-      } catch (error) {
-        console.error("Error saving document:", error);
-        toast.error("Failed to save document.");
-      }
+  const setDocumentMutation = useMutation({
+    ...trpc.document.setDocument.mutationOptions(),
+    onSuccess: (_result, variables) => {
+      updateSavedState({
+        title: variables.title,
+        markdownContent: variables.content || "",
+      });
     },
-    [documentId, isSaved, setDocumentMutation, updateSavedState, currentState]
-  );
+    onError: (error) => {
+      console.error("Error saving document:", error);
+      toast.error("Failed to save document.");
+    },
+  });
 
+  // Debounced save effect
   useEffect(() => {
     if (isSaved) {
       return;
     }
-    const handler = setTimeout(() => {
-      saveDocument(false);
+
+    const timerId = setTimeout(() => {
+      if (!documentId) {
+        console.error("No document ID set.");
+        return;
+      }
+      setDocumentMutation.mutate({
+        id: documentId,
+        title: currentState.title,
+        content: currentState.markdownContent,
+      });
     }, 1000);
 
     return () => {
-      clearTimeout(handler);
+      clearTimeout(timerId);
     };
-  }, [isSaved, saveDocument]);
+  }, [
+    currentState,
+    documentId,
+    isSaved,
+    setDocumentMutation,
+  ]);
 
+  // Save on unload or client-side navigation
   useEffect(() => {
-    const handleBeforeUnload = () => {
-      if (!isSaved) {
-        saveDocument(false);
+    const saveOnExit = () => {
+      const state = useEditorStore.getState();
+      if (!state.isSaved && state.documentId) {
+        const url = `/api/trpc/document.setDocument?batch=1`;
+        const body = {
+          "0": {
+            json: {
+              id: state.documentId,
+              title: state.currentState.title,
+              content: state.currentState.markdownContent,
+            },
+          },
+        };
+        navigator.sendBeacon(url, JSON.stringify(body));
       }
     };
 
-    window.addEventListener("beforeunload", handleBeforeUnload);
+    window.addEventListener("beforeunload", saveOnExit);
 
     return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
+      window.removeEventListener("beforeunload", saveOnExit);
+      saveOnExit(); // Trigger for component unmount (i.e. client-side navigation)
     };
-  }, [isSaved, saveDocument]);
-
-  useEffect(() => {
-    return () => {
-      // When the component unmounts, save the document if it is not saved
-      if (!isSaved) {
-        saveDocument(false);
-      }
-    };
-  }, [isSaved, saveDocument]);
+  }, []);
 
   return null;
 }
+
