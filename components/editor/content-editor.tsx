@@ -21,6 +21,8 @@ import FloatingLinkEditorPlugin from "./plugins/floating-link-editor-plugin";
 import { lexicalCodeTheme, lexicalCodeThemeVarsAuto } from "@/lib/code-theme";
 import "./lexical-code-theme.css";
 import CodeHighlightPlugin from "./plugins/code-hightlight";
+import ToolbarPlugin from "./plugins/toolbar-plugin";
+import { useIsMobile } from "@/lib/hooks/use-is-mobile";
 
 const theme = {
   paragraph: "mb-2",
@@ -64,6 +66,7 @@ export default function ContentEditor({ initialContent }: ContentEditorProps) {
   const [floatingAnchorElem, setFloatingAnchorElem] =
     useState<HTMLDivElement | null>(null);
   const [isLinkEditMode, setIsLinkEditMode] = useState(false);
+  const isMobile = useIsMobile();
 
   const onRef = (_floatingAnchorElem: HTMLDivElement) => {
     if (_floatingAnchorElem !== null) {
@@ -106,6 +109,7 @@ export default function ContentEditor({ initialContent }: ContentEditorProps) {
       style={lexicalCodeThemeVarsAuto}
     >
       <LexicalComposer initialConfig={initialConfig}>
+        <ToolbarPlugin />
         <div className="relative flex-1 flex flex-col">
           <RichTextPlugin
             contentEditable={
@@ -122,7 +126,7 @@ export default function ContentEditor({ initialContent }: ContentEditorProps) {
         />
         <CodeHighlightPlugin />
         <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
-        {floatingAnchorElem && (
+        {floatingAnchorElem && !isMobile && (
           <>
             <FloatingLinkEditorPlugin
               anchorElem={floatingAnchorElem}
