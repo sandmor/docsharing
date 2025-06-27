@@ -3,6 +3,7 @@
 import { useEditorStore } from "@/lib/hooks/useEditorStore";
 import { useEffect } from "react";
 import ContentEditor from "./content-editor";
+import AutoSaveObserver from "@/components/editor/auto-save-observer";
 
 interface EditorProps {
   documentId: string;
@@ -33,8 +34,9 @@ export default function Editor({
   }, [documentId, setDocumentId]);
 
   return (
-    <div>
+    <div className="flex-1 flex flex-col">
       <ContentEditor initialContent={initialContent} />
+      <AutoSaveObserver />
     </div>
   );
 }

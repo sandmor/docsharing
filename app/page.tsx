@@ -4,12 +4,12 @@ import Linker from "next/link";
 
 export default async function Home() {
   return (
-    <main className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] p-8">
+    <main className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] p-8 bg-gradient-to-b from-white to-gray-50">
       <div className="text-center">
-        <h1 className="text-4xl md:text-6xl font-bold tracking-tighter mb-4">
+        <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter mb-4 text-gray-900">
           Create & Share Documents
         </h1>
-        <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
+        <p className="text-xl md:text-2xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
           A simple way to create documents and generate shareable links for
           others to view them.
         </p>

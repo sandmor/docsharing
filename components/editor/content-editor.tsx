@@ -102,15 +102,15 @@ export default function ContentEditor({ initialContent }: ContentEditorProps) {
 
   return (
     <div
-      className="border border-gray-300 rounded-lg"
+      className="border border-gray-300 rounded-lg flex-1 flex flex-col"
       style={lexicalCodeThemeVarsAuto}
     >
       <LexicalComposer initialConfig={initialConfig}>
-        <div className="relative">
+        <div className="relative flex-1 flex flex-col">
           <RichTextPlugin
             contentEditable={
-              <div ref={onRef}>
-                <ContentEditable className="p-4 min-h-[500px] outline-none text-gray-900 resize-none leading-relaxed" />
+              <div ref={onRef} className="flex-1 flex flex-col">
+                <ContentEditable className="p-4 outline-none text-gray-900 resize-none leading-relaxed flex-1" />
               </div>
             }
             ErrorBoundary={LexicalErrorBoundary}

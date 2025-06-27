@@ -1,14 +1,13 @@
 "use client";
 
 import { useEditorStore } from "@/lib/hooks/useEditorStore";
-import { Button } from "./ui/button";
-import { Save } from "lucide-react";
+
 import { useCallback, useEffect } from "react";
 import { useTRPC } from "@/lib/trpc/client";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-export default function Editor() {
+export default function AutoSaveObserver() {
   const trpc = useTRPC();
   const setDocumentMutation = useMutation(
     trpc.document.setDocument.mutationOptions()
@@ -59,12 +58,5 @@ export default function Editor() {
     };
   }, [isSaved, saveDocument]);
 
-  return (
-    <Button
-      onClick={() => saveDocument(true)}
-      disabled={isSaved || setDocumentMutation.isPending}
-    >
-      <Save />
-    </Button>
-  );
+  return null;
 }
