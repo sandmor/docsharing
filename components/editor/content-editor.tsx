@@ -23,6 +23,8 @@ import "./lexical-code-theme.css";
 import CodeHighlightPlugin from "./plugins/code-hightlight";
 import ToolbarPlugin from "./plugins/toolbar-plugin";
 import { useIsMobile } from "@/lib/hooks/use-is-mobile";
+import DraggableBlockPlugin from "./plugins/draggable-block-plugin";
+import { useMediaQuery } from "@/lib/hooks/use-media-query";
 
 const theme = {
   paragraph: "mb-2",
@@ -71,6 +73,7 @@ export default function ContentEditor({
     useState<HTMLDivElement | null>(null);
   const [isLinkEditMode, setIsLinkEditMode] = useState(false);
   const isMobile = useIsMobile();
+  const isSmallScreen = useMediaQuery("(max-width: 768px)");
 
   const onRef = (_floatingAnchorElem: HTMLDivElement) => {
     if (_floatingAnchorElem !== null) {
@@ -118,7 +121,7 @@ export default function ContentEditor({
           <RichTextPlugin
             contentEditable={
               <div ref={onRef} className="flex-1">
-                <ContentEditable className="p-4 outline-none text-gray-900 resize-none leading-relaxed" />
+                <ContentEditable className="p-4 h-full outline-none text-gray-900 resize-none leading-relaxed md:px-13 cursor-text" />
               </div>
             }
             ErrorBoundary={LexicalErrorBoundary}
@@ -130,6 +133,9 @@ export default function ContentEditor({
         />
         <CodeHighlightPlugin />
         <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
+        {floatingAnchorElem && !isSmallScreen && (
+          <DraggableBlockPlugin anchorElem={floatingAnchorElem} />
+        )}
         {floatingAnchorElem && !isMobile && (
           <>
             <FloatingLinkEditorPlugin
