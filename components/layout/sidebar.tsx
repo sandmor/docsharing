@@ -8,6 +8,7 @@ import {
   Plus,
   Share2,
   MoreVertical,
+  Pencil,
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "motion/react";
@@ -22,8 +23,24 @@ import {
 import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import ConfirmationDialog from "../confirmation-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerFooter,
+} from "@/components/ui/drawer";
+import { useMediaQuery } from "@/lib/hooks/use-media-query";
 
 interface SidebarProps {
   currentDocumentId?: string;
@@ -42,12 +59,24 @@ export default function Sidebar({ currentDocumentId }: SidebarProps) {
   const deleteDocumentMutation = useMutation(
     trpc.document.deleteDocument.mutationOptions()
   );
+  const renameDocumentMutation = useMutation(
+    trpc.document.renameDocument.mutationOptions()
+  );
 
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{
     title: string;
     id: string;
   } | null>(null);
+
+  const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
+  const [itemToRename, setItemToRename] = useState<{
+    title: string;
+    id: string;
+  } | null>(null);
+  const [newDocumentTitle, setNewDocumentTitle] = useState("");
+
+  const isDesktop = useMediaQuery("(min-width: 768px)");
 
   const documentList = documents.data || [];
 
@@ -91,7 +120,13 @@ export default function Sidebar({ currentDocumentId }: SidebarProps) {
 
   const handleDeleteClick = useCallback((docId: string, docTitle: string) => {
     setItemToDelete({ title: docTitle, id: docId });
-    setIsDialogOpen(true);
+    setIsDeleteDialogOpen(true);
+  }, []);
+
+  const handleRenameClick = useCallback((docId: string, docTitle: string) => {
+    setItemToRename({ title: docTitle, id: docId });
+    setNewDocumentTitle(docTitle);
+    setIsRenameDialogOpen(true);
   }, []);
 
   const handleConfirmDelete = useCallback(() => {
@@ -110,22 +145,80 @@ export default function Sidebar({ currentDocumentId }: SidebarProps) {
             if (!oldData) return oldData;
             return oldData.filter((doc: any) => doc.id !== itemToDelete.id);
           });
-          setIsDialogOpen(false);
+          setIsDeleteDialogOpen(false);
           setItemToDelete(null);
         },
         onError: () => {
           toast.error(`Failed to delete document "${itemToDelete.title}"`);
-          setIsDialogOpen(false);
+          setIsDeleteDialogOpen(false);
           setItemToDelete(null);
         },
       }
     );
   }, [itemToDelete, deleteDocumentMutation, documents]);
 
+  const handleConfirmRename = useCallback(() => {
+    if (!itemToRename) return;
+    renameDocumentMutation.mutate(
+      { id: itemToRename.id, title: newDocumentTitle },
+      {
+        onSuccess: (updatedDoc) => {
+          toast.success(`Document renamed to ${updatedDoc.title}`);
+          const queryKey =
+            trpc.document.getAllDocumentsForUser.queryOptions().queryKey;
+          queryClient.setQueryData(queryKey, (oldData: any) => {
+            if (!oldData) return oldData;
+            return oldData.map((doc: any) =>
+              doc.id === updatedDoc.id ? updatedDoc : doc
+            );
+          });
+          setIsRenameDialogOpen(false);
+          setItemToRename(null);
+          setNewDocumentTitle("");
+        },
+        onError: () => {
+          toast.error(`Failed to rename document ${itemToRename.title}`);
+          setIsRenameDialogOpen(false);
+          setItemToRename(null);
+          setNewDocumentTitle("");
+        },
+      }
+    );
+  }, [itemToRename, newDocumentTitle, renameDocumentMutation]);
+
   const handleCloseDialog = useCallback(() => {
-    setIsDialogOpen(false);
+    setIsDeleteDialogOpen(false);
     setItemToDelete(null);
+    setIsRenameDialogOpen(false);
+    setItemToRename(null);
+    setNewDocumentTitle("");
   }, []);
+
+  const RenameForm = (
+    <>
+      <DialogHeader>
+        <DialogTitle>Rename Document</DialogTitle>
+      </DialogHeader>
+      <Input
+        value={newDocumentTitle}
+        onChange={(e) => setNewDocumentTitle(e.target.value)}
+        placeholder="Document Title"
+      />
+      <DialogFooter>
+        <Button variant="outline" onClick={handleCloseDialog}>
+          Cancel
+        </Button>
+        <Button
+          onClick={handleConfirmRename}
+          disabled={
+            !newDocumentTitle.trim() || renameDocumentMutation.isPending
+          }
+        >
+          {renameDocumentMutation.isPending ? "Renaming..." : "Rename"}
+        </Button>
+      </DialogFooter>
+    </>
+  );
 
   return (
     <div className="w-full h-full bg-gray-50 border-r border-gray-200 flex flex-col">
@@ -179,6 +272,13 @@ export default function Sidebar({ currentDocumentId }: SidebarProps) {
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
+                      onClick={() => handleRenameClick(doc.id, doc.title)}
+                    >
+                      <Pencil className="mr-2 h-4 w-4" />
+                      Rename
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
                       onClick={() => handleDeleteClick(doc.id, doc.title)}
                       className="text-red-600 focus:text-red-600"
                     >
@@ -192,7 +292,7 @@ export default function Sidebar({ currentDocumentId }: SidebarProps) {
           </AnimatePresence>
         </ul>
         <ConfirmationDialog
-          isOpen={isDialogOpen}
+          isOpen={isDeleteDialogOpen}
           onConfirm={handleConfirmDelete}
           onClose={handleCloseDialog}
           variant="destructive"
@@ -201,6 +301,40 @@ export default function Sidebar({ currentDocumentId }: SidebarProps) {
           cancelText="Cancel"
           confirmText="Delete"
         />
+
+        {isDesktop ? (
+          <Dialog open={isRenameDialogOpen} onOpenChange={handleCloseDialog}>
+            <DialogContent>{RenameForm}</DialogContent>
+          </Dialog>
+        ) : (
+          <Drawer open={isRenameDialogOpen} onOpenChange={handleCloseDialog}>
+            <DrawerContent className="flex flex-col rounded-t-[10px] h-[18rem] mt-24 fixed bottom-0 left-0 right-0">
+              <DrawerHeader className="text-left">
+                <DrawerTitle>Rename Document</DrawerTitle>
+              </DrawerHeader>
+              <div className="p-4 flex-1 overflow-auto">
+                <Input
+                  value={newDocumentTitle}
+                  onChange={(e) => setNewDocumentTitle(e.target.value)}
+                  placeholder="Document Title"
+                />
+              </div>
+              <DrawerFooter className="pt-2">
+                <Button
+                  onClick={handleConfirmRename}
+                  disabled={
+                    !newDocumentTitle.trim() || renameDocumentMutation.isPending
+                  }
+                >
+                  {renameDocumentMutation.isPending ? "Renaming..." : "Rename"}
+                </Button>
+                <Button variant="outline" onClick={handleCloseDialog}>
+                  Cancel
+                </Button>
+              </DrawerFooter>
+            </DrawerContent>
+          </Drawer>
+        )}
       </div>
       <div className="p-4 border-t border-gray-200">
         <Button onClick={handleNewDocument} className="w-full">

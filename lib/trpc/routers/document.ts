@@ -40,6 +40,25 @@ export const documentRouter = createTRPCRouter({
         where: { id: input.id, userId: ctx.auth.userId },
         data: { title: input.title, content: input.content },
       });
+      if (!updatedDoc) {
+        throw new Error(
+          "Document not found or you do not have permission to update it"
+        );
+      }
+      return updatedDoc;
+    }),
+  renameDocument: protectedProcedure
+    .input(z.object({ id: z.string(), title: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const updatedDoc = await prisma.document.update({
+        where: { id: input.id, userId: ctx.auth.userId },
+        data: { title: input.title },
+      });
+      if (!updatedDoc) {
+        throw new Error(
+          "Document not found or you do not have permission to rename it"
+        );
+      }
       return updatedDoc;
     }),
   deleteDocument: protectedProcedure
