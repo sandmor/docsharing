@@ -75,12 +75,14 @@ export default function Sidebar({ currentDocumentId }: SidebarProps) {
     id: string;
   } | null>(null);
   const [newDocumentTitle, setNewDocumentTitle] = useState("");
+  const [isSharing, setIsSharing] = useState(false);
 
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
   const documentList = documents.data || [];
 
   const handleShareClick = useCallback(async (docId: string) => {
+    setIsSharing(true);
     const shareUrl = `${window.location.origin}/viewer/${docId}`;
     try {
       if (navigator.share) {
@@ -92,8 +94,12 @@ export default function Sidebar({ currentDocumentId }: SidebarProps) {
         await navigator.clipboard.writeText(shareUrl);
         toast.success("Link copied to clipboard!");
       }
-    } catch (err) {
-      toast.error("Failed to share document or copy link");
+    } catch (err: any) {
+      if (err.name !== "AbortError") {
+        toast.error("Failed to share document or copy link");
+      }
+    } finally {
+      setIsSharing(false);
     }
   }, []);
 
@@ -253,15 +259,16 @@ export default function Sidebar({ currentDocumentId }: SidebarProps) {
                 </Link>
                 <button
                   onClick={() => handleShareClick(doc.id)}
-                  className="p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                  className="p-1 transition-opacity duration-200"
                   title="Copy shareable link"
+                  disabled={isSharing}
                 >
                   <Share2 className="h-4 w-4 text-gray-500 hover:text-blue-600" />
                 </button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button
-                      className="p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                      className="p-1 transition-opacity duration-200"
                       title="More options"
                     >
                       <MoreVertical className="h-4 w-4 text-gray-500 hover:text-gray-700" />
@@ -276,12 +283,14 @@ export default function Sidebar({ currentDocumentId }: SidebarProps) {
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
+                      disabled={renameDocumentMutation.isPending}
                       onClick={() => handleRenameClick(doc.id, doc.title)}
                     >
                       <Pencil className="mr-2 h-4 w-4" />
                       Rename
                     </DropdownMenuItem>
                     <DropdownMenuItem
+                      disabled={deleteDocumentMutation.isPending}
                       onClick={() => handleDeleteClick(doc.id, doc.title)}
                       className="text-red-600 focus:text-red-600"
                     >
@@ -340,7 +349,11 @@ export default function Sidebar({ currentDocumentId }: SidebarProps) {
         )}
       </div>
       <div className="p-4 border-t border-gray-200">
-        <Button onClick={handleNewDocument} className="w-full">
+        <Button
+          onClick={handleNewDocument}
+          className="w-full"
+          disabled={newDocumentMutation.isPending}
+        >
           <Plus className="mr-2 h-4 w-4" />
           Add a document
         </Button>
