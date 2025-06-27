@@ -2,7 +2,7 @@ import Editor from "@/components/editor/editor";
 import TitleEditor from "@/components/editor/title-editor";
 import DynamicHeader from "@/components/layout/dynamic-header";
 import Sidebar from "@/components/layout/sidebar";
-import { caller, getQueryClient, trpc } from "@/lib/trpc/server";
+import { getQueryClient, trpc } from "@/lib/trpc/server";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import {
   Sheet,
@@ -22,13 +22,15 @@ export default async function DocumentEditor({
   documentId,
   children,
 }: DocumentEditorProps) {
-  const document =
-    documentId && (await caller.document.getById({ id: documentId }));
-
   const queryClient = getQueryClient();
   await queryClient.prefetchQuery(
     trpc.document.getAllDocumentsForUser.queryOptions()
   );
+  if (documentId) {
+    await queryClient.prefetchQuery(
+      trpc.document.getById.queryOptions({ id: documentId })
+    );
+  }
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
@@ -55,20 +57,16 @@ export default async function DocumentEditor({
               </Sheet>
             </div>
 
-            {document && (
+            {documentId && (
               <div className="max-w-md flex-1">
                 <TitleEditor />
               </div>
             )}
           </DynamicHeader>
           <main className="flex flex-col flex-1 p-4 overflow-y-auto">
-            {document && (
+            {documentId && (
               <>
-                <Editor
-                  documentId={documentId}
-                  initialTitle={document.title}
-                  initialContent={document.content}
-                />
+                <Editor documentId={documentId} />
               </>
             )}
             {children}

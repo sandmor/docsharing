@@ -164,14 +164,18 @@ export default function Sidebar({ currentDocumentId }: SidebarProps) {
       {
         onSuccess: (updatedDoc) => {
           toast.success(`Document renamed to ${updatedDoc.title}`);
-          const queryKey =
+          const allDocumentsQueryKey =
             trpc.document.getAllDocumentsForUser.queryOptions().queryKey;
-          queryClient.setQueryData(queryKey, (oldData: any) => {
+          queryClient.setQueryData(allDocumentsQueryKey, (oldData: any) => {
             if (!oldData) return oldData;
             return oldData.map((doc: any) =>
               doc.id === updatedDoc.id ? updatedDoc : doc
             );
           });
+          const getByIdQueryKey = trpc.document.getById.queryOptions({
+            id: updatedDoc.id,
+          }).queryKey;
+          queryClient.setQueryData(getByIdQueryKey, updatedDoc);
           setIsRenameDialogOpen(false);
           setItemToRename(null);
           setNewDocumentTitle("");
@@ -277,7 +281,6 @@ export default function Sidebar({ currentDocumentId }: SidebarProps) {
                       <Pencil className="mr-2 h-4 w-4" />
                       Rename
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={() => handleDeleteClick(doc.id, doc.title)}
                       className="text-red-600 focus:text-red-600"
