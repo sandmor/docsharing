@@ -33,11 +33,11 @@ export const documentRouter = createTRPCRouter({
     });
     return newDoc;
   }),
-  setDocument: publicProcedure
+  setDocument: protectedProcedure
     .input(z.object({ id: z.string(), title: z.string(), content: z.string() }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const updatedDoc = await prisma.document.update({
-        where: { id: input.id },
+        where: { id: input.id, userId: ctx.auth.userId },
         data: { title: input.title, content: input.content },
       });
       return updatedDoc;

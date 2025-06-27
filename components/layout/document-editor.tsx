@@ -4,7 +4,12 @@ import DynamicHeader from "@/components/layout/dynamic-header";
 import Sidebar from "@/components/layout/sidebar";
 import { caller, getQueryClient, trpc } from "@/lib/trpc/server";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
 
@@ -29,7 +34,6 @@ export default async function DocumentEditor({
     <HydrationBoundary state={dehydrate(queryClient)}>
       <div className="flex h-screen">
         {/* Desktop Sidebar */}
-        {/* Desktop Sidebar */}
         <div className="hidden md:block w-72 h-screen sticky top-0">
           <Sidebar currentDocumentId={documentId} />
         </div>
@@ -45,6 +49,7 @@ export default async function DocumentEditor({
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="left" className="p-0 w-72">
+                  <SheetTitle className="sr-only">Documents</SheetTitle>
                   <Sidebar currentDocumentId={documentId} />
                 </SheetContent>
               </Sheet>

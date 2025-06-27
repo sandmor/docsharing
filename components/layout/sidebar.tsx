@@ -2,10 +2,23 @@
 
 import { useTRPC } from "@/lib/trpc/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Eraser, Link as LinkIcon, Plus } from "lucide-react";
+import {
+  CloudDownload,
+  Eraser,
+  Plus,
+  Share2,
+  MoreVertical,
+} from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "motion/react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import ConfirmationDialog from "../confirmation-dialog";
@@ -41,11 +54,17 @@ export default function Sidebar({ currentDocumentId }: SidebarProps) {
   const handleShareClick = useCallback(async (docId: string) => {
     const shareUrl = `${window.location.origin}/viewer/${docId}`;
     try {
-      await navigator.clipboard.writeText(shareUrl);
-      toast.success("Link copied to clipboard!");
+      if (navigator.share) {
+        await navigator.share({
+          title: "Document Share",
+          url: shareUrl,
+        });
+      } else {
+        await navigator.clipboard.writeText(shareUrl);
+        toast.success("Link copied to clipboard!");
+      }
     } catch (err) {
-      // Fallback for browsers that don't support clipboard API
-      toast.error("Failed to copy link");
+      toast.error("Failed to share document or copy link");
     }
   }, []);
 
@@ -60,6 +79,15 @@ export default function Sidebar({ currentDocumentId }: SidebarProps) {
       },
     });
   }, [newDocumentMutation]);
+
+  const handleDownloadClick = useCallback((docId: string) => {
+    const link = document.createElement("a");
+    link.href = `/api/download/${docId}`;
+    link.setAttribute("download", "");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }, []);
 
   const handleDeleteClick = useCallback((docId: string, docTitle: string) => {
     setItemToDelete({ title: docTitle, id: docId });
@@ -127,19 +155,38 @@ export default function Sidebar({ currentDocumentId }: SidebarProps) {
                   {doc.title}
                 </Link>
                 <button
-                  onClick={() => handleDeleteClick(doc.id, doc.title)}
-                  className="p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                  title="Delete document"
-                >
-                  <Eraser className="h-4 w-4 text-gray-500 hover:text-red-600" />
-                </button>
-                <button
                   onClick={() => handleShareClick(doc.id)}
                   className="p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                   title="Copy shareable link"
                 >
-                  <LinkIcon className="h-4 w-4 text-gray-500 hover:text-gray-700" />
+                  <Share2 className="h-4 w-4 text-gray-500 hover:text-blue-600" />
                 </button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className="p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                      title="More options"
+                    >
+                      <MoreVertical className="h-4 w-4 text-gray-500 hover:text-gray-700" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      onClick={() => handleDownloadClick(doc.id)}
+                    >
+                      <CloudDownload className="mr-2 h-4 w-4" />
+                      Download
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => handleDeleteClick(doc.id, doc.title)}
+                      className="text-red-600 focus:text-red-600"
+                    >
+                      <Eraser className="mr-2 h-4 w-4" />
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </motion.li>
             ))}
           </AnimatePresence>
