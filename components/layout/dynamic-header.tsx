@@ -13,8 +13,8 @@ interface DynamicHeaderProps {
 
 export default function DynamicHeader({ children }: DynamicHeaderProps) {
   return (
-    <header className="flex justify-between items-center p-4 gap-4 h-16 border-b border-gray-200">
-      <div>{children}</div>
+    <header className="sticky top-0 z-10 flex justify-between items-center p-4 gap-4 h-16 border-b border-gray-200 bg-white md:static">
+      <div className="flex items-center gap-4">{children}</div>
 
       <div className="flex items-center gap-4">
         <SignedOut>

@@ -100,7 +100,7 @@ export default function Sidebar({ currentDocumentId }: SidebarProps) {
   }, []);
 
   return (
-    <div className="w-72 h-screen sticky top-0 bg-gray-50 border-r border-gray-200 flex flex-col">
+    <div className="w-full h-full bg-gray-50 border-r border-gray-200 flex flex-col">
       <div className="flex-1 p-4 overflow-y-auto">
         <h2 className="text-lg font-semibold mb-4">Documents</h2>
         <ul className="space-y-2">
