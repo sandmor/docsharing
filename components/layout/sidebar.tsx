@@ -100,8 +100,8 @@ export default function Sidebar({ currentDocumentId }: SidebarProps) {
   }, []);
 
   return (
-    <aside className="w-64 h-full bg-gray-50 border-r border-gray-200 overflow-y-auto flex flex-col">
-      <div className="flex-1 p-4">
+    <div className="w-72 h-screen sticky top-0 bg-gray-50 border-r border-gray-200 flex flex-col">
+      <div className="flex-1 p-4 overflow-y-auto">
         <h2 className="text-lg font-semibold mb-4">Documents</h2>
         <ul className="space-y-2">
           <AnimatePresence initial={false}>
@@ -161,6 +161,6 @@ export default function Sidebar({ currentDocumentId }: SidebarProps) {
           Add a document
         </Button>
       </div>
-    </aside>
+    </div>
   );
 }

@@ -25,18 +25,17 @@ export default async function DocumentEditor({
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <div className="min-h-screen grid grid-rows-[auto_1fr]">
-        <DynamicHeader>
-          {document && (
-            <div className="max-w-md">
-              <TitleEditor />
-            </div>
-          )}
-        </DynamicHeader>
-        <div className="flex h-full overflow-hidden">
-          <Sidebar currentDocumentId={documentId} />
-
-          <main className="flex-1 max-w-3xl mx-auto p-4 overflow-y-auto">
+      <div className="flex h-screen overflow-y-auto">
+        <Sidebar currentDocumentId={documentId} />
+        <div className="flex-1">
+          <DynamicHeader>
+            {document && (
+              <div className="max-w-md">
+                <TitleEditor />
+              </div>
+            )}
+          </DynamicHeader>
+          <main className="flex-1 p-4">
             {document && (
               <>
                 <Editor
