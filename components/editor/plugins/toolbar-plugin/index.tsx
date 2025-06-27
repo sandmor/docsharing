@@ -32,6 +32,7 @@ import { Separator } from "@/components/ui/separator";
 import { LinkEditorDialog } from "../../link-editor-dialog";
 import { $isLinkNode } from "@lexical/link";
 import { getSelectedNode } from "../../utils/getSelectedNode";
+import { cn } from "@/lib/utils";
 
 const LowPriority = 1;
 
@@ -49,6 +50,7 @@ function Toolbar({
   canRedo,
   openLinkEditor,
   scrollOffset,
+  position,
 }: {
   editor: LexicalEditor;
   isBold: boolean;
@@ -63,10 +65,19 @@ function Toolbar({
   canRedo: boolean;
   openLinkEditor: () => void;
   scrollOffset: number;
+  position: "top" | "bottom";
 }): JSX.Element {
   return (
     <div
-      className="sticky top-0 z-10 flex mb-px bg-white p-1 rounded-t-lg vertical-align-middle border-b border-b-gray-200"
+      className={cn(
+        "sticky top-0 z-10 flex mb-px bg-white p-1 vertical-align-middle border-gray-200",
+        {
+          "rounded-t-lg": position === "top",
+          "border-b": position === "top",
+          "rounded-b-lg": position === "bottom",
+          "border-t": position === "bottom",
+        }
+      )}
       style={{
         transform: `translateY(${scrollOffset}px)`,
         willChange: "transform", // Optimize for animations
@@ -206,8 +217,10 @@ function Toolbar({
 
 export default function ToolbarPlugin({
   scrollerRef,
+  position,
 }: {
   scrollerRef?: React.RefObject<HTMLDivElement | null>;
+  position: "top" | "bottom";
 }): JSX.Element | null {
   const [editor] = useLexicalComposerContext();
   const [isLink, setIsLink] = useState(false);
@@ -324,6 +337,7 @@ export default function ToolbarPlugin({
         canRedo={canRedo}
         openLinkEditor={openLinkEditor}
         scrollOffset={scrollOffset}
+        position={position}
       />
       <LinkEditorDialog
         editor={editor}

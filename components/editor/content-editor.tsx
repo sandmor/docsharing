@@ -116,7 +116,9 @@ export default function ContentEditor({
       style={lexicalCodeThemeVarsAuto}
     >
       <LexicalComposer initialConfig={initialConfig}>
-        <ToolbarPlugin scrollerRef={scrollerRef} />
+        {!isSmallScreen && (
+          <ToolbarPlugin scrollerRef={scrollerRef} position="top" />
+        )}
         <div className="relative flex-1 flex flex-col">
           <RichTextPlugin
             contentEditable={
@@ -127,6 +129,9 @@ export default function ContentEditor({
             ErrorBoundary={LexicalErrorBoundary}
           />
         </div>
+        {isSmallScreen && (
+          <ToolbarPlugin scrollerRef={scrollerRef} position="bottom" />
+        )}
         <HistoryPlugin />
         <LinkPlugin
           attributes={{ rel: "noopener noreferrer", target: "_blank" }}
