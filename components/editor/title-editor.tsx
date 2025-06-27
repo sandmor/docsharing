@@ -19,12 +19,20 @@ export default function TitleEditor() {
       if (documentId) {
         const queryKey =
           trpc.document.getAllDocumentsForUser.queryOptions().queryKey;
-        queryClient.setQueryData(queryKey, (oldData: any) => {
+        queryClient.setQueryData(queryKey, (oldData) => {
           if (!oldData) return oldData;
 
-          return oldData.map((doc: any) =>
-            doc.id === documentId ? { ...doc, title: newTitle } : doc
-          );
+          const docIndex = oldData.findIndex((doc) => doc.id === documentId);
+          if (docIndex === -1) return oldData;
+
+          const updatedDoc = { ...oldData[docIndex], title: newTitle };
+
+          // Move the updated document to the front of the list
+          return [
+            updatedDoc,
+            ...oldData.slice(0, docIndex),
+            ...oldData.slice(docIndex + 1),
+          ];
         });
       }
     },

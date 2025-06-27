@@ -3,20 +3,33 @@
 import { useEditorStore } from "@/lib/hooks/useEditorStore";
 import { useEffect } from "react";
 import { useTRPC } from "@/lib/trpc/client";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 export default function AutoSaveObserver() {
   const trpc = useTRPC();
+  const queryClient = useQueryClient();
   const { documentId, currentState, isSaved, updateSavedState } =
     useEditorStore();
 
   const setDocumentMutation = useMutation({
     ...trpc.document.setDocument.mutationOptions(),
-    onSuccess: (_result, variables) => {
+    onSuccess: (result, variables) => {
       updateSavedState({
         title: variables.title,
         markdownContent: variables.content || "",
+      });
+      const allDocumentsQueryKey =
+        trpc.document.getAllDocumentsForUser.queryOptions().queryKey;
+      queryClient.setQueryData(allDocumentsQueryKey, (oldData) => {
+        // Move the updated document to the front of the list
+        if (!oldData) return oldData;
+        const currentIdx = oldData.findIndex((doc) => doc.id === result.id);
+        return [
+          oldData[currentIdx],
+          ...oldData.slice(0, currentIdx),
+          ...oldData.slice(currentIdx + 1),
+        ];
       });
     },
     onError: (error) => {
@@ -46,12 +59,7 @@ export default function AutoSaveObserver() {
     return () => {
       clearTimeout(timerId);
     };
-  }, [
-    currentState,
-    documentId,
-    isSaved,
-    setDocumentMutation,
-  ]);
+  }, [currentState, documentId, isSaved, setDocumentMutation]);
 
   // Save on unload or client-side navigation
   useEffect(() => {
@@ -82,4 +90,3 @@ export default function AutoSaveObserver() {
 
   return null;
 }
-
