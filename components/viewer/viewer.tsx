@@ -3,8 +3,8 @@
 import ReactMarkdown from "react-markdown";
 import { useTRPC } from "@/lib/trpc/client";
 import { useQuery } from "@tanstack/react-query";
-import { CodeBlock } from "@/components/ui/code-block";
 import { useMemo } from "react";
+import { CodeComponent } from "@/components/viewer/code-component";
 
 interface ViewerProps {
   docId: string;
@@ -19,7 +19,7 @@ export default function Viewer({ docId }: ViewerProps) {
       code({ node, className, children, ...props }: any) {
         const match = /language-(\w+)/.exec(className || "");
         return match ? (
-          <CodeBlock
+          <CodeComponent
             language={match[1]}
             value={String(children).replace(/\n$/, "")}
           />
