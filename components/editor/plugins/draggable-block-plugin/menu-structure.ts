@@ -1,86 +1,43 @@
 import {
-  Plus,
   Copy,
   Trash2,
-  ArrowUp,
-  ArrowDown,
   Type,
-  Image,
   List,
-  Quote,
   Code,
-  Table,
-  Calendar,
-  MapPin,
-  FileText,
+  Heading1,
+  Heading2,
+  Heading3,
+  Heading4,
+  Heading5,
+  Heading6,
 } from "lucide-react";
 import { MenuItem } from "./types";
 
 export const menuStructure: MenuItem[] = [
-  { label: "Duplicate", icon: Copy, action: "duplicate" },
-  { label: "Move Up", icon: ArrowUp, action: "moveUp" },
-  { label: "Move Down", icon: ArrowDown, action: "moveDown" },
   {
-    label: "Insert Block",
-    icon: Plus,
+    label: "Turn into",
+    icon: Type,
     submenu: [
-      { label: "Text", icon: Type, action: "insert-text" },
-      { label: "Heading", icon: FileText, action: "insert-heading" },
-      { label: "Quote", icon: Quote, action: "insert-quote" },
+      { label: "Text", icon: Type, action: "turn-into-text" },
+      { label: "Heading 1", icon: Heading1, action: "turn-into-h1" },
+      { label: "Heading 2", icon: Heading2, action: "turn-into-h2" },
+      { label: "Heading 3", icon: Heading3, action: "turn-into-h3" },
+      { label: "Heading 4", icon: Heading4, action: "turn-into-h4" },
+      { label: "Heading 5", icon: Heading5, action: "turn-into-h5" },
+      { label: "Heading 6", icon: Heading6, action: "turn-into-h6" },
       {
-        label: "Media",
-        icon: Image,
-        submenu: [
-          { label: "Image", icon: Image, action: "insert-image" },
-          { label: "Video", icon: FileText, action: "insert-video" },
-          {
-            label: "Gallery",
-            icon: Image,
-            submenu: [
-              { label: "Photo Grid", icon: Image, action: "insert-photo-grid" },
-              { label: "Carousel", icon: Image, action: "insert-carousel" },
-              { label: "Slideshow", icon: Image, action: "insert-slideshow" },
-            ],
-          },
-        ],
-      },
-      {
-        label: "Lists",
+        label: "Bulleted list",
         icon: List,
-        submenu: [
-          { label: "Bullet List", icon: List, action: "insert-bullet-list" },
-          {
-            label: "Numbered List",
-            icon: List,
-            action: "insert-numbered-list",
-          },
-          { label: "Checklist", icon: List, action: "insert-checklist" },
-        ],
+        action: "turn-into-bullet-list",
       },
-      { label: "Code Block", icon: Code, action: "insert-code" },
-      { label: "Table", icon: Table, action: "insert-table" },
       {
-        label: "Embeds",
-        icon: Calendar,
-        submenu: [
-          { label: "Calendar", icon: Calendar, action: "insert-calendar" },
-          { label: "Map", icon: MapPin, action: "insert-map" },
-          {
-            label: "Social",
-            icon: FileText,
-            submenu: [
-              { label: "Twitter", icon: FileText, action: "insert-twitter" },
-              { label: "YouTube", icon: FileText, action: "insert-youtube" },
-              {
-                label: "Instagram",
-                icon: FileText,
-                action: "insert-instagram",
-              },
-            ],
-          },
-        ],
+        label: "Ordered list",
+        icon: List,
+        action: "turn-into-ordered-list",
       },
+      { label: "Code", icon: Code, action: "turn-into-code" },
     ],
   },
+  { label: "Duplicate", icon: Copy, action: "duplicate" },
   { label: "Delete", icon: Trash2, action: "delete", destructive: true },
 ];

@@ -1,9 +1,19 @@
 import type { JSX } from "react";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { DraggableBlockPlugin_EXPERIMENTAL } from "@lexical/react/LexicalDraggableBlockPlugin";
-import { $createParagraphNode, $getNearestNodeFromDOMNode } from "lexical";
+import {
+  $copyNode,
+  $createParagraphNode,
+  $getNearestNodeFromDOMNode,
+  $getNodeByKey,
+  $isElementNode,
+  ElementNode,
+} from "lexical";
 import { useRef, useState, useEffect } from "react";
 import { Plus, GripVertical } from "lucide-react";
+import { $createHeadingNode, HeadingTagType } from "@lexical/rich-text";
+import { $createListItemNode, $createListNode, ListType } from "@lexical/list";
+import { $createCodeNode } from "@lexical/code";
 
 import { DropdownState, MenuAlignment } from "./types";
 import { isOnMenu } from "./utils";
@@ -175,8 +185,42 @@ export default function DraggableBlockPlugin({
     }
 
     editor.update(() => {
-      console.log(`Executing action: ${action} on node: ${targetNodeKey}`);
-      // Implement your action handling logic here
+      const node = $getNodeByKey(targetNodeKey);
+      if (!node) return;
+
+      if (action.startsWith("turn-into-")) {
+        const type = action.split("-")[2];
+        let newNode: ElementNode | null = null;
+
+        if (type === "text") {
+          newNode = $createParagraphNode();
+        } else if (type.startsWith("h")) {
+          newNode = $createHeadingNode(`h${type[1]}` as HeadingTagType);
+        } else if (type === "bullet" || type === "ordered") {
+          const listType = type === "bullet" ? "ul" : "ol";
+          const list = $createListNode(listType as ListType);
+          const listItem = $createListItemNode();
+          listItem.append($createParagraphNode());
+          list.append(listItem);
+          newNode = list;
+        } else if (type === "code") {
+          newNode = $createCodeNode();
+        }
+
+        if (newNode && $isElementNode(node)) {
+          const children = node.getChildren();
+          children.forEach((child) => newNode!.append(child));
+          node.replace(newNode);
+          newNode.select();
+        }
+      }
+      if (action === "duplicate") {
+        const clonedNode = $copyNode(node);
+        node.insertAfter(clonedNode);
+        clonedNode.selectNext();
+      } else if (action === "delete") {
+        node.remove();
+      }
     });
 
     closeDropdown();
