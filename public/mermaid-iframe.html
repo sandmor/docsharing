@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mermaid Renderer</title>
+  <style>
+    body { 
+      margin: 0; 
+      padding: 20px; 
+      font-family: Arial, sans-serif;
+      min-height: 100vh;
+      background: transparent;
+    }
+    
+    #mermaid-container { 
+      width: 100%; 
+      height: auto; 
+      overflow: visible;
+    }
+
+    .temp-render {
+      position: absolute;
+      left: -9999px;
+      top: -9999px;
+      visibility: hidden;
+    }
+  </style>
+</head>
+<body>
+  <div id="mermaid-container"></div>
+  
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+    
+    // Configuration will be injected here
+    const MERMAID_CONFIG = window.MERMAID_CONFIG || {
+      startOnLoad: false,
+      theme: "default",
+      logLevel: 5,
+      securityLevel: 'loose',
+      flowchart: {
+        htmlLabels: true,
+        curve: "basis",
+      }
+    };
+    
+    // Initialize mermaid with the provided configuration
+    mermaid.initialize(MERMAID_CONFIG);
+
+    const channel = new BroadcastChannel('mermaid-renderer');
+    
+    /**
+     * Render diagram using mermaid's direct render method
+     */
+    const renderDiagramDirect = async (requestId, diagramText) => {
+      try {
+        const result = await mermaid.render(`mermaid-${requestId}`, diagramText);
+        return { 
+          requestId, 
+          success: true, 
+          svg: result.svg,
+          method: 'direct'
+        };
+      } catch (error) {
+        console.warn('Direct render failed:', error.message);
+        throw error;
+      }
+    };
+
+    /**
+     * Fallback render method using DOM elements
+     */
+    const renderDiagramWithDOM = async (requestId, diagramText) => {
+      const tempDiv = document.createElement('div');
+      tempDiv.id = `temp-${requestId}`;
+      tempDiv.className = 'temp-render';
+      tempDiv.innerHTML = `<div class="mermaid">${diagramText}</div>`;
+      
+      try {
+        document.body.appendChild(tempDiv);
+        
+        const mermaidElement = tempDiv.querySelector('.mermaid');
+        if (!mermaidElement) {
+          throw new Error('Mermaid element not found');
+        }
+
+        await mermaid.run({ nodes: [mermaidElement] });
+        
+        const svgElement = tempDiv.querySelector('svg');
+        if (!svgElement) {
+          throw new Error('No SVG generated from mermaid.run');
+        }
+        
+        const svg = svgElement.outerHTML;
+        
+        return { 
+          requestId, 
+          success: true, 
+          svg,
+          method: 'dom'
+        };
+      } finally {
+        // Always cleanup the temp element
+        if (tempDiv.parentNode) {
+          document.body.removeChild(tempDiv);
+        }
+      }
+    };
+
+    /**
+     * Main render function with fallback strategy
+     */
+    const renderDiagram = async (requestId, diagramText) => {
+      try {
+        // Try direct render first
+        return await renderDiagramDirect(requestId, diagramText);
+      } catch (directError) {
+        console.warn('Direct render failed, trying DOM method:', directError.message);
+        
+        try {
+          // Fallback to DOM-based rendering
+          return await renderDiagramWithDOM(requestId, diagramText);
+        } catch (domError) {
+          console.error('Both render methods failed:', {
+            direct: directError.message,
+            dom: domError.message
+          });
+          
+          return {
+            requestId,
+            success: false,
+            error: `Rendering failed: ${directError.message}. Fallback also failed: ${domError.message}`
+          };
+        }
+      }
+    };
+
+    /**
+     * Validate diagram text before rendering
+     */
+    const validateDiagramText = (diagramText) => {
+      if (!diagramText || typeof diagramText !== 'string') {
+        throw new Error('Invalid diagram text: must be a non-empty string');
+      }
+      
+      if (diagramText.trim().length === 0) {
+        throw new Error('Invalid diagram text: cannot be empty or whitespace only');
+      }
+      
+      return diagramText.trim();
+    };
+
+    /**
+     * Handle incoming render requests
+     */
+    const handleRenderRequest = async (event) => {
+      const { requestId, diagramText } = event.data;
+      
+      if (!requestId) {
+        console.error('No requestId provided');
+        return;
+      }
+
+      try {
+        const validatedText = validateDiagramText(diagramText);
+        const result = await renderDiagram(requestId, validatedText);
+        channel.postMessage(result);
+      } catch (validationError) {
+        channel.postMessage({
+          requestId,
+          success: false,
+          error: `Validation failed: ${validationError.message}`
+        });
+      }
+    };
+
+    /**
+     * Handle configuration updates
+     */
+    const handleConfigUpdate = async (event) => {
+      const { config } = event.data;
+      
+      try {
+        const newConfig = { ...MERMAID_CONFIG, ...config };
+        mermaid.initialize(newConfig);
+        
+        // Update global config
+        window.MERMAID_CONFIG = newConfig;
+        
+        channel.postMessage({
+          type: 'config-updated',
+          success: true
+        });
+      } catch (error) {
+        channel.postMessage({
+          type: 'config-updated',
+          success: false,
+          error: error.message
+        });
+      }
+    };
+
+    /**
+     * Message router
+     */
+    const handleMessage = async (event) => {
+      const data = event.data;
+      
+      if (!data || typeof data !== 'object') {
+        return;
+      }
+
+      switch (data.type) {
+        case 'render':
+          await handleRenderRequest(event);
+          break;
+        case 'config-update':
+          await handleConfigUpdate(event);
+          break;
+        case 'ping':
+          channel.postMessage({ type: 'pong', timestamp: Date.now() });
+          break;
+        default:
+          // Legacy support - if no type specified, assume it's a render request
+          if (data.requestId && data.diagramText) {
+            await handleRenderRequest(event);
+          }
+          break;
+      }
+    };
+
+    // Set up message listener
+    channel.addEventListener('message', handleMessage);
+    
+    // Error handling for the iframe
+    window.addEventListener('error', (event) => {
+      console.error('Iframe error:', event.error);
+      channel.postMessage({
+        type: 'error',
+        error: event.error?.message || 'Unknown iframe error'
+      });
+    });
+
+    window.addEventListener('unhandledrejection', (event) => {
+      console.error('Unhandled promise rejection in iframe:', event.reason);
+      channel.postMessage({
+        type: 'error',
+        error: event.reason?.message || 'Unhandled promise rejection'
+      });
+    });
+    
+    // Signal that the iframe is ready
+    channel.postMessage({ 
+      type: 'ready', 
+      timestamp: Date.now(),
+      mermaidVersion: mermaid.version || 'unknown'
+    });
+
+    console.log('Mermaid iframe renderer initialized');
+  </script>
+</body>
+</html>
