@@ -4,6 +4,7 @@ interface MenuItem {
   action?: string;
   destructive?: boolean;
   submenu?: MenuItem[];
+  checked?: boolean;
 }
 
 interface DropdownState {

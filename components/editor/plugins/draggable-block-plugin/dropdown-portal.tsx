@@ -12,6 +12,7 @@ interface DropdownPortalProps {
   onClose: () => void;
   onAction: (action: string) => void;
   anchorElem: HTMLElement;
+  activeBlockType: string | null;
 }
 
 export const DropdownPortal = ({
@@ -19,6 +20,7 @@ export const DropdownPortal = ({
   onClose,
   onAction,
   anchorElem,
+  activeBlockType,
 }: DropdownPortalProps) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -258,7 +260,20 @@ export const DropdownPortal = ({
             {menuStructure.map((item, index) => (
               <MenuItemComponent
                 key={`${item.label}-${index}`}
-                item={item}
+                item={{
+                  ...item,
+                  checked: item.action
+                    ? item.action.split("-").slice(2).join("-") ===
+                      activeBlockType
+                    : false,
+                  submenu: item.submenu?.map((subItem) => ({
+                    ...subItem,
+                    checked: subItem.action
+                      ? subItem.action.split("-").slice(2).join("-") ===
+                        activeBlockType
+                      : false,
+                  })),
+                }}
                 depth={0}
                 path=""
                 onAction={handleAction}

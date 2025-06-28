@@ -11,9 +11,19 @@ import {
 } from "lexical";
 import { useRef, useState, useEffect } from "react";
 import { Plus, GripVertical } from "lucide-react";
-import { $createHeadingNode, HeadingTagType } from "@lexical/rich-text";
-import { $createListItemNode, $createListNode, ListType } from "@lexical/list";
-import { $createCodeNode } from "@lexical/code";
+import {
+  $createHeadingNode,
+  HeadingTagType,
+  $isHeadingNode,
+} from "@lexical/rich-text";
+import {
+  $createListItemNode,
+  $createListNode,
+  ListType,
+  $isListNode,
+  $isListItemNode,
+} from "@lexical/list";
+import { $createCodeNode, $isCodeNode } from "@lexical/code";
 
 import { DropdownState, MenuAlignment } from "./types";
 import { isOnMenu } from "./utils";
@@ -42,6 +52,7 @@ export default function DraggableBlockPlugin({
     originPosition: { x: 0, y: 0 },
     lockedNodeKey: null,
   });
+  const [activeBlockType, setActiveBlockType] = useState<string | null>(null);
 
   function insertBlock(e: React.MouseEvent) {
     if (!draggableElement || !editor) {
@@ -66,19 +77,37 @@ export default function DraggableBlockPlugin({
 
   const handleGripClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    e.preventDefault();
 
     if (!draggableElement) return;
 
-    const nodeKey = editor.read(() => {
+    let nodeKey: string | null = null;
+    let blockType: string | null = null;
+
+    editor.read(() => {
       try {
         const node = $getNearestNodeFromDOMNode(draggableElement);
-        return node ? node.getKey() : null;
-      } catch {
-        return null;
+        if (node) {
+          nodeKey = node.getKey();
+          if ($isHeadingNode(node)) {
+            blockType = `h${node.getTag().substring(1)}`;
+          } else if ($isListNode(node)) {
+            blockType =
+              node.getListType() === "bullet" ? "bullet-list" : "ordered-list";
+          } else if ($isCodeNode(node)) {
+            blockType = "code";
+          } else {
+            blockType = "text";
+          }
+        }
+      } catch (error) {
+        console.warn("Error reading node:", error);
       }
     });
 
     if (!nodeKey) return;
+
+    setActiveBlockType(blockType);
 
     if (dropdownState.isOpen) {
       if (dropdownState.lockedNodeKey === nodeKey) {
@@ -87,7 +116,7 @@ export default function DraggableBlockPlugin({
       }
       closeDropdown();
       setTimeout(
-        () => openDropdownForElement(draggableElement, nodeKey, e),
+        () => openDropdownForElement(draggableElement, nodeKey!, e),
         50
       );
       return;
@@ -192,34 +221,53 @@ export default function DraggableBlockPlugin({
         const type = action.split("-")[2];
         let newNode: ElementNode | null = null;
 
-        if (type === "text") {
-          newNode = $createParagraphNode();
-        } else if (type.startsWith("h")) {
-          newNode = $createHeadingNode(`h${type[1]}` as HeadingTagType);
-        } else if (type === "bullet" || type === "ordered") {
-          const listType = type === "bullet" ? "ul" : "ol";
-          const list = $createListNode(listType as ListType);
-          const listItem = $createListItemNode();
-          listItem.append($createParagraphNode());
-          list.append(listItem);
-          newNode = list;
-        } else if (type === "code") {
-          newNode = $createCodeNode();
-        }
+        try {
+          if (type === "text") {
+            newNode = $createParagraphNode();
+          } else if (type.startsWith("h") && type.length === 2) {
+            const headingLevel = type[1];
+            if (["1", "2", "3", "4", "5", "6"].includes(headingLevel)) {
+              newNode = $createHeadingNode(
+                `h${headingLevel}` as HeadingTagType
+              );
+            }
+          } else if (type === "bullet" || type === "ordered") {
+            const listType = type === "bullet" ? "ul" : "ol";
+            const list = $createListNode(listType as ListType);
+            const listItem = $createListItemNode();
+            listItem.append($createParagraphNode());
+            list.append(listItem);
+            newNode = list;
+          } else if (type === "code") {
+            newNode = $createCodeNode();
+          }
 
-        if (newNode && $isElementNode(node)) {
-          const children = node.getChildren();
-          children.forEach((child) => newNode!.append(child));
-          node.replace(newNode);
-          newNode.select();
+          if (newNode && $isElementNode(node)) {
+            const children = node.getChildren();
+            children.forEach((child) => {
+              const clonedChild = $copyNode(child);
+              newNode!.append(clonedChild);
+            });
+            node.replace(newNode);
+            newNode.select();
+          }
+        } catch (error) {
+          console.warn("Error transforming node:", error);
         }
-      }
-      if (action === "duplicate") {
-        const clonedNode = $copyNode(node);
-        node.insertAfter(clonedNode);
-        clonedNode.selectNext();
+      } else if (action === "duplicate") {
+        try {
+          const clonedNode = $copyNode(node);
+          node.insertAfter(clonedNode);
+          clonedNode.selectNext();
+        } catch (error) {
+          console.warn("Error duplicating node:", error);
+        }
       } else if (action === "delete") {
-        node.remove();
+        try {
+          node.remove();
+        } catch (error) {
+          console.warn("Error deleting node:", error);
+        }
       }
     });
 
@@ -312,6 +360,7 @@ export default function DraggableBlockPlugin({
         onClose={closeDropdown}
         onAction={handleDropdownAction}
         anchorElem={anchorElem}
+        activeBlockType={activeBlockType}
       />
     </>
   );

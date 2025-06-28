@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { motion } from "motion/react";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Check } from "lucide-react";
 import { MenuItem, SubmenuState } from "./types";
 import { SubmenuPortal } from "./submenu-portal";
 
@@ -98,13 +98,16 @@ export const MenuItemComponent = ({
           <Icon className="mr-3 h-4 w-4" />
           {item.label}
         </div>
-        {hasSubmenu && (
-          <ChevronRight
-            className={`h-4 w-4 transition-transform ${
-              isSubmenuOpen ? "rotate-90" : ""
-            }`}
-          />
-        )}
+        <div className="flex items-center">
+          {item.checked && <Check className="h-4 w-4 mr-2" />}
+          {hasSubmenu && (
+            <ChevronRight
+              className={`h-4 w-4 transition-transform ${
+                isSubmenuOpen ? "rotate-90" : ""
+              }`}
+            />
+          )}
+        </div>
       </motion.button>
 
       {/* Render submenu */}
