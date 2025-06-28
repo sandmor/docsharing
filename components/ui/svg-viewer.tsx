@@ -193,7 +193,7 @@ export const SVGViewer = memo(
           ref={containerRef}
           className={cn(
             "w-full h-full overflow-hidden",
-            !isMaximized && "border border-gray-200 rounded-md bg-white",
+            !isMaximized && "bg-white",
             className
           )}
           id={uniqueId}
