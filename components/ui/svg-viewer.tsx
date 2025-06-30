@@ -16,22 +16,36 @@ export const SVGViewer = memo(
   ({ id, svgContent, className }: SVGViewerProps) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const svgRef = useRef<SVGSVGElement | null>(null);
+    const gRef = useRef<SVGGElement | null>(null);
     const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(
       null
     );
     const [isMaximized, setIsMaximized] = useState(false);
     const [isVisible, setIsVisible] = useState(false);
+    const [isLocked, setIsLocked] = useState(true);
     const viewState = useRef<{ k: number; x: number; y: number } | null>(null);
     const uniqueId = `svg-viewer-${id}`;
 
+    const applyReset = () => {
+      if (!svgRef.current || !zoomRef.current) return;
+      const svg = d3.select(svgRef.current);
+      svg
+        .transition()
+        .duration(750)
+        .call(zoomRef.current.transform, d3.zoomIdentity);
+      setIsLocked(true);
+    };
+
     const handleZoomIn = () => {
       if (!svgRef.current || !zoomRef.current) return;
+      setIsLocked(false);
       const svg = d3.select(svgRef.current);
       svg.transition().duration(300).call(zoomRef.current.scaleBy, 1.5);
     };
 
     const handleZoomOut = () => {
       if (!svgRef.current || !zoomRef.current) return;
+      setIsLocked(false);
       const svg = d3.select(svgRef.current);
       svg
         .transition()
@@ -40,12 +54,7 @@ export const SVGViewer = memo(
     };
 
     const handleReset = () => {
-      if (!svgRef.current || !zoomRef.current) return;
-      const svg = d3.select(svgRef.current);
-      svg
-        .transition()
-        .duration(750)
-        .call(zoomRef.current.transform, d3.zoomIdentity);
+      applyReset();
     };
 
     const handleToggleMaximize = () => {
@@ -63,12 +72,11 @@ export const SVGViewer = memo(
         svg.on(".zoom", null);
 
         const g = svg.append("g");
-        // Move all of svg's children into the new group.
+        gRef.current = g.node();
         while (svg.node()!.firstChild !== g.node()) {
           g.node()!.appendChild(svg.node()!.firstChild!);
         }
 
-        // Remove any existing width/height attributes and ensure full container coverage
         svg
           .attr("width", "100%")
           .attr("height", "100%")
@@ -83,46 +91,34 @@ export const SVGViewer = memo(
           .zoom<SVGSVGElement, unknown>()
           .scaleExtent([0.1, 10])
           .on("zoom", (event) => {
+            if (event.sourceEvent) {
+              // This event is triggered by user interaction (wheel, drag)
+              const currentTransform = event.transform;
+              if (
+                currentTransform.k !== 1 ||
+                currentTransform.x !== 0 ||
+                currentTransform.y !== 0
+              ) {
+                setIsLocked(false);
+              }
+            }
             g.attr("transform", event.transform.toString());
           });
 
         zoomRef.current = zoom;
         svg.call(zoom);
 
-        // Preserve transform
         if (preserveTransform && viewState.current) {
           const { k, x, y } = viewState.current;
           const transform = d3.zoomIdentity.translate(x, y).scale(k);
           svg.call(zoom.transform, transform);
+          setIsLocked(k === 1 && x === 0 && y === 0);
         } else {
-          // Fit and center
-          const gNode = g.node();
-          if (!gNode) return;
-          const bounds = gNode.getBBox();
-          const svgNode = svg.node();
-          if (!svgNode) return;
-          const parent = svgNode.parentElement;
-          if (bounds && parent) {
-            const { width, height } = parent.getBoundingClientRect();
-            const { width: bWidth, height: bHeight } = bounds;
-
-            if (bWidth > 0 && bHeight > 0) {
-              const midX = bounds.x + bWidth / 2;
-              const midY = bounds.y + bHeight / 2;
-              const scale = Math.min(width / bWidth, height / bHeight) * 0.9;
-              const newX = width / 2 - midX * scale;
-              const newY = height / 2 - midY * scale;
-              const newTransform = d3.zoomIdentity
-                .translate(newX, newY)
-                .scale(scale);
-              svg.call(zoom.transform, newTransform);
-            }
-          }
+          svg.call(zoom.transform, d3.zoomIdentity);
+          setIsLocked(true);
         }
 
-        svg.on("dblclick.zoom", () => {
-          svg.transition().duration(750).call(zoom.transform, d3.zoomIdentity);
-        });
+        svg.on("dblclick.zoom", null);
 
         svg
           .style("cursor", "grab")
@@ -141,22 +137,16 @@ export const SVGViewer = memo(
       containerRef.current.innerHTML = svgContent;
       const svgElement = containerRef.current.querySelector("svg");
       if (svgElement) {
-        // Capture original dimensions before removing attributes
         const originalWidth = svgElement.getAttribute("width") || "100";
         const originalHeight = svgElement.getAttribute("height") || "100";
 
-        // Remove any existing width/height attributes that might constrain the SVG
         svgElement.removeAttribute("width");
         svgElement.removeAttribute("height");
 
-        // If there's no viewBox, try to create one from the original dimensions
         if (!svgElement.hasAttribute("viewBox")) {
           svgElement.setAttribute(
             "viewBox",
             `0 0 ${originalWidth} ${originalHeight}`
-          );
-          console.warn(
-            "No viewBox found. Using original dimensions to create one."
           );
         }
 
@@ -169,12 +159,13 @@ export const SVGViewer = memo(
           containerRef.current.innerHTML = "";
         }
         svgRef.current = null;
+        gRef.current = null;
       };
     }, [svgContent, id, isMaximized]);
 
     useEffect(() => {
       if (isMaximized) {
-        setTimeout(() => setIsVisible(true), 10); // Delay for transition
+        setTimeout(() => setIsVisible(true), 10);
       } else {
         setIsVisible(false);
       }
@@ -200,7 +191,6 @@ export const SVGViewer = memo(
           style={{ minWidth: "100%", minHeight: "100%" }}
         />
 
-        {/* Floating Action Buttons */}
         <div
           className={cn(
             "absolute right-4 flex flex-col gap-2",
