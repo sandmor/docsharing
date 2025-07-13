@@ -1,9 +1,14 @@
 import { $createParagraphNode, TextNode } from "lexical";
 import { $createHeadingNode } from "@lexical/rich-text";
-import { $createListNode, $createListItemNode } from "@lexical/list";
+import {
+  $createListNode,
+  $createListItemNode,
+  $isListNode,
+} from "@lexical/list";
 import { $createCodeNode } from "@lexical/code";
 import { $createQuoteNode } from "@lexical/rich-text";
 import { ActionHandler } from "@/components/ui/context-menu";
+import { $createDividerNode } from "../divider-plugin/node";
 
 interface SlashCommandContextData {
   textNode: TextNode;
@@ -73,6 +78,9 @@ export const slashCommandActionHandler = (
           case "insert-quote":
             newNode = $createQuoteNode();
             break;
+          case "insert-divider":
+            newNode = $createDividerNode();
+            break;
           default:
             newNode = $createParagraphNode();
         }
@@ -82,10 +90,7 @@ export const slashCommandActionHandler = (
           parentNode.replace(newNode);
 
           // Focus the new node
-          if (
-            action === "insert-bullet-list" ||
-            action === "insert-ordered-list"
-          ) {
+          if ($isListNode(newNode)) {
             // For lists, focus the list item
             const listItem = newNode.getChildren()[0];
             if (listItem) {

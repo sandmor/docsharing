@@ -10,6 +10,7 @@ import {
   Heading4,
   Heading5,
   Heading6,
+  Minus,
 } from "lucide-react";
 import { MenuConfig } from "@/components/ui/context-menu";
 
@@ -33,5 +34,6 @@ export const slashCommandMenuConfig: MenuConfig = {
     },
     { label: "Code Block", icon: Code, action: "insert-code" },
     { label: "Quote", icon: Quote, action: "insert-quote" },
+    { label: "Divider", icon: Minus, action: "insert-divider" },
   ],
 };

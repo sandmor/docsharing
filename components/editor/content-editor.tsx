@@ -10,7 +10,10 @@ import { HeadingNode, QuoteNode } from "@lexical/rich-text";
 import { ListNode, ListItemNode } from "@lexical/list";
 import { CodeHighlightNode, CodeNode } from "@lexical/code";
 import { LinkNode } from "@lexical/link";
-import { $convertToMarkdownString, TRANSFORMERS } from "@lexical/markdown";
+import {
+  $convertToMarkdownString,
+  TRANSFORMERS as VENDORED_TRANSFORMERS,
+} from "@lexical/markdown";
 import { useEditorStore } from "@/lib/hooks/useEditorStore";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
@@ -27,6 +30,13 @@ import DraggableBlockPlugin from "./plugins/draggable-block-plugin";
 import { useMediaQuery } from "@/lib/hooks/use-media-query";
 import SmartListBackspacePlugin from "./plugins/smart-list-backspace-plugin";
 import SlashCommandPlugin from "./plugins/slash-command-plugin";
+import { DividerPlugin } from "./plugins/divider-plugin";
+import {
+  DividerNode,
+  DIVIDER_TRANSFORMER,
+} from "./plugins/divider-plugin/node";
+
+export const TRANSFORMERS = [...VENDORED_TRANSFORMERS, DIVIDER_TRANSFORMER];
 
 const theme = {
   paragraph: "mb-2",
@@ -47,6 +57,7 @@ const theme = {
     listitem: "mb-1",
   },
   quote: "border-l-4 border-gray-300 pl-4 italic text-gray-600 mb-2",
+  hr: "border-t border-gray-300 my-3",
   code: "relative block bg-transparent p-0 font-mono text-sm",
   codeHighlight: lexicalCodeTheme,
   link: "text-blue-600 underline hover:text-blue-800",
@@ -109,6 +120,7 @@ export default function ContentEditor({
       CodeNode,
       CodeHighlightNode,
       LinkNode,
+      DividerNode,
     ],
   };
 
@@ -138,12 +150,15 @@ export default function ContentEditor({
         <LinkPlugin
           attributes={{ rel: "noopener noreferrer", target: "_blank" }}
         />
+        <DividerPlugin />
         <CodeHighlightPlugin />
         <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
         <SmartListBackspacePlugin />
-        <SlashCommandPlugin anchorElem={floatingAnchorElem || document.body} />
         {floatingAnchorElem && !isSmallScreen && (
-          <DraggableBlockPlugin anchorElem={floatingAnchorElem} />
+          <>
+            <SlashCommandPlugin anchorElem={floatingAnchorElem} />
+            <DraggableBlockPlugin anchorElem={floatingAnchorElem} />
+          </>
         )}
         {floatingAnchorElem && !isMobile && (
           <>

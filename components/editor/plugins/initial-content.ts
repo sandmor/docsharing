@@ -1,7 +1,8 @@
 import { useEffect, useRef } from "react";
 import { $getRoot } from "lexical";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import { $convertFromMarkdownString, TRANSFORMERS } from "@lexical/markdown";
+import { $convertFromMarkdownString } from "@lexical/markdown";
+import { TRANSFORMERS } from "../content-editor";
 
 export function InitialContentPlugin({
   initialContent,

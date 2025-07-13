@@ -18,6 +18,7 @@ import { blockMenuConfig } from "./menu-config";
 import { blockCheckBehavior, BlockContextData } from "./block-checker";
 import { createBlockActionHandler } from "./block-actions";
 import { isOnMenu } from "./utils";
+import { $isDividerNode } from "../divider-plugin/node";
 
 const DRAGGABLE_BLOCK_MENU_CLASSNAME = "draggable-block-menu";
 
@@ -99,6 +100,8 @@ export default function DraggableBlockPlugin({
             blockType = "code";
           } else if ($isQuoteNode(node)) {
             blockType = "quote";
+          } else if ($isDividerNode(node)) {
+            blockType = "divider";
           } else {
             blockType = "text";
           }
@@ -137,7 +140,7 @@ export default function DraggableBlockPlugin({
         menuComponent={
           <div
             ref={menuRef}
-            className={`absolute left-0 top-0 z-50 flex cursor-grab gap-0.5 rounded-sm bg-white p-0.5 opacity-0 will-change-transform hover:opacity-100 ${DRAGGABLE_BLOCK_MENU_CLASSNAME}`}
+            className={`absolute left-0 top-0 z-50 flex cursor-grab gap-0.5 rounded-sm p-0.5 opacity-0 will-change-transform hover:opacity-100 ${DRAGGABLE_BLOCK_MENU_CLASSNAME}`}
           >
             <button
               title="Click to add below"
