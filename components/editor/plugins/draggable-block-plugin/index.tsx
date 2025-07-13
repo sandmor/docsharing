@@ -26,7 +26,7 @@ import {
 import { $createCodeNode, $isCodeNode } from "@lexical/code";
 
 import { DropdownState, MenuAlignment } from "./types";
-import { isOnMenu } from "./utils";
+import { $deepCopyNode, isOnMenu } from "./utils";
 import { DropdownPortal } from "./dropdown-portal";
 
 const DRAGGABLE_BLOCK_MENU_CLASSNAME = "draggable-block-menu";
@@ -232,11 +232,8 @@ export default function DraggableBlockPlugin({
               );
             }
           } else if (type === "bullet" || type === "ordered") {
-            const listType = type === "bullet" ? "ul" : "ol";
-            const list = $createListNode(listType as ListType);
-            const listItem = $createListItemNode();
-            listItem.append($createParagraphNode());
-            list.append(listItem);
+            const listType = type === "bullet" ? "bullet" : "number";
+            const list = $createListNode(listType);
             newNode = list;
           } else if (type === "code") {
             newNode = $createCodeNode();
@@ -245,8 +242,7 @@ export default function DraggableBlockPlugin({
           if (newNode && $isElementNode(node)) {
             const children = node.getChildren();
             children.forEach((child) => {
-              const clonedChild = $copyNode(child);
-              newNode!.append(clonedChild);
+              newNode?.append(child);
             });
             node.replace(newNode);
             newNode.select();
@@ -256,7 +252,7 @@ export default function DraggableBlockPlugin({
         }
       } else if (action === "duplicate") {
         try {
-          const clonedNode = $copyNode(node);
+          const clonedNode = $deepCopyNode(node);
           node.insertAfter(clonedNode);
           clonedNode.selectNext();
         } catch (error) {

@@ -1,3 +1,5 @@
+import { $copyNode, $isElementNode, LexicalNode } from "lexical";
+
 const DRAGGABLE_BLOCK_MENU_CLASSNAME = "draggable-block-menu";
 
 export function isOnMenu(element: HTMLElement): boolean {
@@ -20,3 +22,17 @@ export const getSiblingPaths = (path: string, allPaths: string[]): string[] => {
     return pParent === parentPath && p !== path;
   });
 };
+
+export function $deepCopyNode(node: LexicalNode): LexicalNode {
+  const clone = $copyNode(node);
+
+  if ($isElementNode(node) && $isElementNode(clone)) {
+    const children = node.getChildren();
+    for (const child of children) {
+      const childClone = $deepCopyNode(child);
+      clone.append(childClone);
+    }
+  }
+
+  return clone;
+}
