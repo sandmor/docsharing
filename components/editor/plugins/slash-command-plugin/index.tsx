@@ -179,10 +179,10 @@ export default function SlashCommandPlugin({
       <ImageDialog
         isOpen={isImageDialogVisible}
         onClose={() => setIsImageDialogVisible(false)}
-        onSubmit={(url) => {
+        onSubmit={(url, altText) => {
           editor.dispatchCommand(INSERT_IMAGE_COMMAND, {
             src: url,
-            altText: "User-provided image",
+            altText,
           });
           setIsImageDialogVisible(false);
         }}

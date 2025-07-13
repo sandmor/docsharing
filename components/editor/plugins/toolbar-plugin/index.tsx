@@ -234,6 +234,7 @@ export default function ToolbarPlugin({
   const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo] = useState(false);
   const [isLinkEditorOpen, setIsLinkEditorOpen] = useState(false);
+  const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
   const [scrollOffset, setScrollOffset] = useState(0);
 
   const rafRef = useRef<number | null>(null);
