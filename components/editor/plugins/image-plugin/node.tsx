@@ -1,4 +1,3 @@
-
 import type {
   DOMConversionMap,
   DOMConversionOutput,
@@ -37,7 +36,7 @@ export type SerializedImageNode = Spread<
   SerializedLexicalNode
 >;
 
-export class ImageNode extends DecoratorNode<JSX.Element> {
+export class ImageNode extends DecoratorNode<React.JSX.Element> {
   __src: string;
   __altText: string;
 
@@ -46,11 +45,7 @@ export class ImageNode extends DecoratorNode<JSX.Element> {
   }
 
   static clone(node: ImageNode): ImageNode {
-    return new ImageNode(
-      node.__src,
-      node.__altText,
-      node.__key
-    );
+    return new ImageNode(node.__src, node.__altText, node.__key);
   }
 
   static importJSON(serializedNode: SerializedImageNode): ImageNode {
@@ -65,8 +60,6 @@ export class ImageNode extends DecoratorNode<JSX.Element> {
     const element = document.createElement("img");
     element.setAttribute("src", this.__src);
     element.setAttribute("alt", this.__altText);
-    element.setAttribute("width", this.__width.toString());
-    element.setAttribute("height", this.__height.toString());
     return { element };
   }
 
@@ -79,11 +72,7 @@ export class ImageNode extends DecoratorNode<JSX.Element> {
     };
   }
 
-  constructor(
-    src: string,
-    altText: string,
-    key?: NodeKey
-  ) {
+  constructor(src: string, altText: string, key?: NodeKey) {
     super(key);
     this.__src = src;
     this.__altText = altText;
@@ -119,13 +108,8 @@ export class ImageNode extends DecoratorNode<JSX.Element> {
     return this.__altText;
   }
 
-  decorate(): JSX.Element {
-    return (
-      <img
-        src={this.__src}
-        alt={this.__altText}
-      />
-    );
+  decorate(): React.JSX.Element {
+    return <img src={this.__src} alt={this.__altText} />;
   }
 }
 
@@ -134,13 +118,7 @@ export function $createImageNode({
   src,
   key,
 }: ImagePayload): ImageNode {
-  return $applyNodeReplacement(
-    new ImageNode(
-      src,
-      altText,
-      key
-    )
-  );
+  return $applyNodeReplacement(new ImageNode(src, altText, key));
 }
 
 export function $isImageNode(
