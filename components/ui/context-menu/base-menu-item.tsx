@@ -1,40 +1,64 @@
 import { useRef } from "react";
 import { motion } from "motion/react";
 import { ChevronRight, Check } from "lucide-react";
-import { MenuItem, SubmenuState } from "./types";
-import { SubmenuPortal } from "./submenu-portal";
+import {
+  MenuItemState,
+  SubmenuState,
+  CheckBehavior,
+  ActionHandler,
+  PositioningConfig,
+} from "./types";
+import { createMenuItemPath, calculateSubmenuPosition } from "./utils";
 
-interface MenuItemComponentProps {
-  item: MenuItem;
-  depth?: number;
-  path?: string;
-  onAction: (action: string) => void;
+export interface BaseMenuItemProps {
+  item: MenuItemState;
+  depth: number;
+  path: string;
+  contextData: any;
+  checkBehavior: CheckBehavior;
+  actionHandler: ActionHandler;
   submenuState: SubmenuState;
+  anchorElement: HTMLElement;
+  positioning?: PositioningConfig;
   onSubmenuToggle: (path: string, isOpen: boolean) => void;
   onSubmenuPosition: (path: string, position: { x: number; y: number }) => void;
   onSubmenuEnter: (path: string) => void;
   onSubmenuLeave: (path: string) => void;
+  onClose: () => void;
+  children?: React.ReactNode;
 }
 
-export const MenuItemComponent = ({
+export const BaseMenuItem = ({
   item,
-  depth = 0,
-  path = "",
-  onAction,
+  depth,
+  path,
+  contextData,
+  checkBehavior,
+  actionHandler,
   submenuState,
+  anchorElement,
+  positioning,
   onSubmenuToggle,
   onSubmenuPosition,
   onSubmenuEnter,
   onSubmenuLeave,
-}: MenuItemComponentProps) => {
+  onClose,
+  children,
+}: BaseMenuItemProps) => {
   const itemRef = useRef<HTMLButtonElement>(null);
   const Icon = item.icon;
-  const currentPath = path ? `${path}.${item.label}` : item.label;
+  const currentPath = createMenuItemPath(path, item.label);
   const hasSubmenu = item.submenu && item.submenu.length > 0;
   const isSubmenuOpen = submenuState.activeSubmenus.has(currentPath);
 
+  // Determine checked and disabled states
+  const isChecked = checkBehavior.isChecked(item, contextData);
+  const isDisabled = checkBehavior.isDisabled?.(item, contextData) || false;
+
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+
+    if (isDisabled) return;
 
     if (hasSubmenu) {
       if (isSubmenuOpen) {
@@ -43,29 +67,38 @@ export const MenuItemComponent = ({
         // Calculate submenu position
         if (itemRef.current) {
           const rect = itemRef.current.getBoundingClientRect();
-          const submenuPosition = {
-            x: rect.right + 4,
-            y: rect.top - 8,
-          };
+          const anchorRect = anchorElement.getBoundingClientRect();
+          const submenuPosition = calculateSubmenuPosition(
+            rect,
+            anchorRect,
+            { width: 220, height: 200 }, // Default submenu dimensions
+            positioning
+          );
           onSubmenuPosition(currentPath, submenuPosition);
           onSubmenuToggle(currentPath, true);
         }
       }
     } else if (item.action) {
-      onAction(item.action);
+      actionHandler.handleAction(item.action, contextData);
+      onClose();
     }
   };
 
   const handleMouseEnter = () => {
+    if (isDisabled) return;
+
     onSubmenuEnter(currentPath);
 
     if (hasSubmenu && !isSubmenuOpen) {
       if (itemRef.current) {
         const rect = itemRef.current.getBoundingClientRect();
-        const submenuPosition = {
-          x: rect.right + 4,
-          y: rect.top - 8,
-        };
+        const anchorRect = anchorElement.getBoundingClientRect();
+        const submenuPosition = calculateSubmenuPosition(
+          rect,
+          anchorRect,
+          { width: 220, height: 200 }, // Default submenu dimensions
+          positioning
+        );
         onSubmenuPosition(currentPath, submenuPosition);
         onSubmenuToggle(currentPath, true);
       }
@@ -73,6 +106,7 @@ export const MenuItemComponent = ({
   };
 
   const handleMouseLeave = () => {
+    if (isDisabled) return;
     onSubmenuLeave(currentPath);
   };
 
@@ -90,8 +124,13 @@ export const MenuItemComponent = ({
         onClick={handleClick}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        className={`w-full text-left px-3 py-2 text-sm flex items-center justify-between hover:bg-gray-50 transition-colors relative ${
-          item.destructive ? "text-red-600 hover:bg-red-50" : "text-gray-700"
+        disabled={isDisabled}
+        className={`w-full text-left px-3 py-2 text-sm flex items-center justify-between transition-colors relative ${
+          isDisabled
+            ? "text-gray-400 cursor-not-allowed"
+            : item.destructive
+            ? "text-red-600 hover:bg-red-50 cursor-pointer"
+            : "text-gray-700 hover:bg-gray-50 cursor-pointer"
         } ${isSubmenuOpen ? "bg-gray-50" : ""}`}
       >
         <div className="flex items-center">
@@ -99,7 +138,7 @@ export const MenuItemComponent = ({
           {item.label}
         </div>
         <div className="flex items-center">
-          {item.checked && <Check className="h-4 w-4 mr-2" />}
+          {isChecked && <Check className="h-4 w-4 mr-2" />}
           {hasSubmenu && (
             <ChevronRight
               className={`h-4 w-4 transition-transform ${
@@ -110,23 +149,8 @@ export const MenuItemComponent = ({
         </div>
       </motion.button>
 
-      {/* Render submenu */}
-      {hasSubmenu && isSubmenuOpen && (
-        <SubmenuPortal
-          items={item.submenu!}
-          position={
-            submenuState.submenuPositions[currentPath] || { x: 0, y: 0 }
-          }
-          path={currentPath}
-          depth={depth + 1}
-          onAction={onAction}
-          submenuState={submenuState}
-          onSubmenuToggle={onSubmenuToggle}
-          onSubmenuPosition={onSubmenuPosition}
-          onSubmenuEnter={onSubmenuEnter}
-          onSubmenuLeave={onSubmenuLeave}
-        />
-      )}
+      {/* Render any children (e.g., submenus) */}
+      {children}
     </>
   );
 };
