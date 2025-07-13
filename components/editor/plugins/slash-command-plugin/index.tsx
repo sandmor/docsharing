@@ -19,6 +19,8 @@ import {
 } from "@/components/ui/context-menu";
 import { slashCommandMenuConfig } from "./menu-config";
 import { slashCommandActionHandler } from "./slash-actions";
+import ImageDialog from "../image-plugin/image-dialog";
+import { INSERT_IMAGE_COMMAND } from "../image-plugin";
 
 interface SlashCommandContextData {
   textNode: TextNode;
@@ -34,6 +36,7 @@ export default function SlashCommandPlugin({
 }): JSX.Element {
   const [editor] = useLexicalComposerContext();
   const [queryString, setQueryString] = useState("");
+  const [isImageDialogVisible, setIsImageDialogVisible] = useState(false);
 
   const positioning: PositioningConfig = {
     alignment: menuAlignment,
@@ -52,7 +55,9 @@ export default function SlashCommandPlugin({
     menuDimensions: { width: 220, height: 200 },
   });
 
-  const actionHandler = slashCommandActionHandler(editor, closeMenu);
+  const actionHandler = slashCommandActionHandler(editor, closeMenu, () =>
+    setIsImageDialogVisible(true)
+  );
 
   const filteredItems = slashCommandMenuConfig.items.filter(
     (item: MenuItemConfig) =>
@@ -153,22 +158,35 @@ export default function SlashCommandPlugin({
   }, [editor, menuState.isOpen, openMenu, closeMenu]);
 
   return (
-    <ContextMenu
-      config={{
-        ...slashCommandMenuConfig,
-        items: filteredItems.map((item: MenuItemConfig, index: number) => ({
-          ...item,
-        })),
-      }}
-      state={menuState}
-      checkBehavior={{
-        isChecked: () => false,
-        isDisabled: () => false,
-      }}
-      actionHandler={actionHandler}
-      positioning={positioning}
-      anchorElement={anchorElem}
-      onClose={closeMenu}
-    />
+    <>
+      <ContextMenu
+        config={{
+          ...slashCommandMenuConfig,
+          items: filteredItems.map((item: MenuItemConfig, index: number) => ({
+            ...item,
+          })),
+        }}
+        state={menuState}
+        checkBehavior={{
+          isChecked: () => false,
+          isDisabled: () => false,
+        }}
+        actionHandler={actionHandler}
+        positioning={positioning}
+        anchorElement={anchorElem}
+        onClose={closeMenu}
+      />
+      <ImageDialog
+        isOpen={isImageDialogVisible}
+        onClose={() => setIsImageDialogVisible(false)}
+        onSubmit={(url) => {
+          editor.dispatchCommand(INSERT_IMAGE_COMMAND, {
+            src: url,
+            altText: "User-provided image",
+          });
+          setIsImageDialogVisible(false);
+        }}
+      />
+    </>
   );
 }

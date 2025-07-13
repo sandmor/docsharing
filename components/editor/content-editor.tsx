@@ -35,8 +35,14 @@ import {
   DividerNode,
   DIVIDER_TRANSFORMER,
 } from "./plugins/divider-plugin/node";
+import ImagesPlugin, { IMAGE_TRANSFORMER } from "./plugins/image-plugin";
+import { ImageNode } from "./plugins/image-plugin/node";
 
-export const TRANSFORMERS = [...VENDORED_TRANSFORMERS, DIVIDER_TRANSFORMER];
+export const TRANSFORMERS = [
+  IMAGE_TRANSFORMER,
+  DIVIDER_TRANSFORMER,
+  ...VENDORED_TRANSFORMERS,
+];
 
 const theme = {
   paragraph: "mb-2",
@@ -121,6 +127,7 @@ export default function ContentEditor({
       CodeHighlightNode,
       LinkNode,
       DividerNode,
+      ImageNode,
     ],
   };
 
@@ -152,6 +159,7 @@ export default function ContentEditor({
         />
         <DividerPlugin />
         <CodeHighlightPlugin />
+        <ImagesPlugin />
         <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
         <SmartListBackspacePlugin />
         {floatingAnchorElem && !isSmallScreen && (
