@@ -1,4 +1,4 @@
-import { CheckBehavior, MenuItemConfig } from "../../../ui/context-menu";
+import { CheckBehavior, MenuItemConfig } from "@/components/ui/context-menu";
 
 export interface BlockContextData {
   activeBlockType: string | null;

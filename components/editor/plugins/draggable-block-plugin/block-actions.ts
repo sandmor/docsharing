@@ -5,10 +5,14 @@ import {
   $isElementNode,
   ElementNode,
 } from "lexical";
-import { $createHeadingNode, HeadingTagType } from "@lexical/rich-text";
+import {
+  $createHeadingNode,
+  $createQuoteNode,
+  HeadingTagType,
+} from "@lexical/rich-text";
 import { $createListNode, $isListNode, $isListItemNode } from "@lexical/list";
 import { $createCodeNode } from "@lexical/code";
-import { ActionHandler } from "../../../ui/context-menu";
+import { ActionHandler } from "@/components/ui/context-menu";
 import { BlockContextData } from "./block-checker";
 
 function $deepCopyNode(node: any): any {
@@ -57,6 +61,8 @@ export const createBlockActionHandler = (editor: any): ActionHandler => ({
             newNode = list;
           } else if (type === "code") {
             newNode = $createCodeNode();
+          } else if (type === "quote") {
+            newNode = $createQuoteNode();
           }
 
           if (newNode && $isElementNode(node)) {
@@ -87,7 +93,15 @@ export const createBlockActionHandler = (editor: any): ActionHandler => ({
               });
               node.replace(newNode);
             }
-            newNode.select();
+            if ($isListNode(newNode)) {
+              // For lists, focus the list item
+              const listItem = newNode.getFirstChild();
+              if (listItem) {
+                listItem.selectStart();
+              }
+            } else {
+              newNode.selectEnd();
+            }
           }
         } catch (error) {
           console.warn("Error transforming node:", error);

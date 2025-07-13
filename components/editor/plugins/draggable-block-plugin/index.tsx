@@ -4,7 +4,7 @@ import { DraggableBlockPlugin_EXPERIMENTAL } from "@lexical/react/LexicalDraggab
 import { $createParagraphNode, $getNearestNodeFromDOMNode } from "lexical";
 import { useRef, useState } from "react";
 import { Plus, GripVertical } from "lucide-react";
-import { $isHeadingNode } from "@lexical/rich-text";
+import { $isHeadingNode, $isQuoteNode } from "@lexical/rich-text";
 import { $isListNode } from "@lexical/list";
 import { $isCodeNode } from "@lexical/code";
 
@@ -97,6 +97,8 @@ export default function DraggableBlockPlugin({
               node.getListType() === "bullet" ? "bullet-list" : "ordered-list";
           } else if ($isCodeNode(node)) {
             blockType = "code";
+          } else if ($isQuoteNode(node)) {
+            blockType = "quote";
           } else {
             blockType = "text";
           }

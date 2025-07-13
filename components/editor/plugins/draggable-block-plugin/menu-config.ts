@@ -10,8 +10,9 @@ import {
   Heading4,
   Heading5,
   Heading6,
+  Quote,
 } from "lucide-react";
-import { MenuConfig } from "../../../ui/context-menu";
+import { MenuConfig } from "@/components/ui/context-menu";
 
 export const blockMenuConfig: MenuConfig = {
   title: "Block Actions",
@@ -40,6 +41,7 @@ export const blockMenuConfig: MenuConfig = {
           action: "turn-into-ordered-list",
         },
         { label: "Code", icon: Code, action: "turn-into-code" },
+        { label: "Quote", icon: Quote, action: "turn-into-quote" },
       ],
     },
     { label: "Duplicate", icon: Copy, action: "duplicate" },

@@ -26,6 +26,7 @@ import { useIsMobile } from "@/lib/hooks/use-is-mobile";
 import DraggableBlockPlugin from "./plugins/draggable-block-plugin";
 import { useMediaQuery } from "@/lib/hooks/use-media-query";
 import SmartListBackspacePlugin from "./plugins/smart-list-backspace-plugin";
+import SlashCommandPlugin from "./plugins/slash-command-plugin";
 
 const theme = {
   paragraph: "mb-2",
@@ -140,6 +141,7 @@ export default function ContentEditor({
         <CodeHighlightPlugin />
         <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
         <SmartListBackspacePlugin />
+        <SlashCommandPlugin anchorElem={floatingAnchorElem || document.body} />
         {floatingAnchorElem && !isSmallScreen && (
           <DraggableBlockPlugin anchorElem={floatingAnchorElem} />
         )}
