@@ -28,9 +28,11 @@ interface SlashCommandContextData {
 }
 
 export default function SlashCommandPlugin({
+  documentId,
   anchorElem = document.body,
   menuAlignment = "left",
 }: {
+  documentId: string;
   anchorElem?: HTMLElement;
   menuAlignment?: MenuAlignment;
 }): JSX.Element {
@@ -177,6 +179,7 @@ export default function SlashCommandPlugin({
         onClose={closeMenu}
       />
       <ImageDialog
+        documentId={documentId}
         isOpen={isImageDialogVisible}
         onClose={() => setIsImageDialogVisible(false)}
         onSubmit={(url, altText) => {

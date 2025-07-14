@@ -77,11 +77,13 @@ const theme = {
 };
 
 interface ContentEditorProps {
+  documentId: string;
   initialContent?: string;
   scrollerRef?: React.RefObject<HTMLDivElement | null>;
 }
 
 export default function ContentEditor({
+  documentId,
   initialContent,
   scrollerRef,
 }: ContentEditorProps) {
@@ -164,7 +166,10 @@ export default function ContentEditor({
         <SmartListBackspacePlugin />
         {floatingAnchorElem && !isSmallScreen && (
           <>
-            <SlashCommandPlugin anchorElem={floatingAnchorElem} />
+            <SlashCommandPlugin
+              documentId={documentId}
+              anchorElem={floatingAnchorElem}
+            />
             <DraggableBlockPlugin anchorElem={floatingAnchorElem} />
           </>
         )}

@@ -1,5 +1,7 @@
+import { prisma } from "@/lib/prisma";
 import { S3Client } from "@aws-sdk/client-s3";
 import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
+import { auth } from "@clerk/nextjs/server";
 import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -10,6 +12,19 @@ const BodySchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  const { userId } = await auth();
+
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const userUsage = prisma.file.aggregate({
+    where: { userId },
+    _sum: {
+      fileSize: true,
+    },
+  });
+
   const s3 = new S3Client({
     region: process.env.AWS_REGION,
     credentials: {
@@ -22,7 +37,11 @@ export async function POST(req: NextRequest) {
   const ex = name.split(".").pop();
   const Key = `${randomUUID()}.${ex}`;
 
-  const maxFileSize = 10 * 1024 * 1024; // 10 MB
+  const userQuota = 1024 * 1024 * 100; // 100 MB
+  const maxFileSize = userQuota - ((await userUsage)._sum.fileSize || 0);
+  if (maxFileSize <= 0) {
+    return NextResponse.json({ error: "User quota exceeded" }, { status: 403 });
+  }
 
   const { url, fields } = await createPresignedPost(s3, {
     Bucket: process.env.AWS_S3_BUCKET_NAME!,
@@ -31,6 +50,16 @@ export async function POST(req: NextRequest) {
     Conditions: [["content-length-range", 0, maxFileSize]],
     Fields: {
       "Content-Type": contentType,
+    },
+  });
+
+  await prisma.file.create({
+    data: {
+      userId,
+      fileKey: Key,
+      fileName: name,
+      fileType: contentType,
+      fileSize: null, // Size will be determined after upload
     },
   });
 

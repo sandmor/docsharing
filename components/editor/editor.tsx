@@ -58,6 +58,7 @@ export default function Editor({ documentId }: EditorProps) {
       ref={scrollerRef}
     >
       <ContentEditor
+        documentId={documentId}
         initialContent={initialContent}
         scrollerRef={scrollerRef}
       />

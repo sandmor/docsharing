@@ -8,14 +8,18 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ChangeEvent, useState } from "react";
+import { confirmUpload } from "@/lib/actions/file";
+import { toast } from "sonner";
 
 interface ImageDialogProps {
+  documentId: string;
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (url: string, altText: string) => void;
 }
 
 export default function ImageDialog({
+  documentId,
   isOpen,
   onClose,
   onSubmit,
@@ -23,6 +27,7 @@ export default function ImageDialog({
   const [url, setUrl] = useState("");
   const [altText, setAltText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [fileKey, setFileKey] = useState("");
 
   const onUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -47,6 +52,7 @@ export default function ImageDialog({
         body: formData,
       });
       setUrl(`${window.location.origin}/api/file/${key}`);
+      setFileKey(key);
     } catch (error) {
       console.log(error);
     } finally {
@@ -54,7 +60,15 @@ export default function ImageDialog({
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    if (fileKey) {
+      try {
+        await confirmUpload({ fileKey, documentId });
+      } catch (error) {
+        toast.error("Failed to confirm image upload.");
+        return;
+      }
+    }
     onSubmit(url, altText);
     onClose();
   };
