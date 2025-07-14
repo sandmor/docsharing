@@ -16,7 +16,7 @@ export default function AutoSaveObserver() {
     ...trpc.document.setDocument.mutationOptions(),
     onSuccess: (result, variables) => {
       updateSavedState({
-        title: variables.title,
+        title: variables.title || "",
         markdownContent: variables.content || "",
       });
       const allDocumentsQueryKey =
