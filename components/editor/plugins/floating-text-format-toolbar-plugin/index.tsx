@@ -11,6 +11,7 @@ import type { JSX } from "react";
 import "./index.css";
 
 import { $isLinkNode, TOGGLE_LINK_COMMAND } from "@lexical/link";
+import { $isCodeHighlightNode } from "@lexical/code";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { mergeRegister } from "@lexical/utils";
 import {
@@ -314,9 +315,6 @@ function useFloatingTextFormatToolbar(
   const [isBold, setIsBold] = useState(false);
   const [isItalic, setIsItalic] = useState(false);
   const [isUnderline, setIsUnderline] = useState(false);
-  const [isUppercase, setIsUppercase] = useState(false);
-  const [isLowercase, setIsLowercase] = useState(false);
-  const [isCapitalize, setIsCapitalize] = useState(false);
   const [isStrikethrough, setIsStrikethrough] = useState(false);
   const [isSubscript, setIsSubscript] = useState(false);
   const [isSuperscript, setIsSuperscript] = useState(false);
@@ -352,9 +350,6 @@ function useFloatingTextFormatToolbar(
       setIsBold(selection.hasFormat("bold"));
       setIsItalic(selection.hasFormat("italic"));
       setIsUnderline(selection.hasFormat("underline"));
-      setIsUppercase(selection.hasFormat("uppercase"));
-      setIsLowercase(selection.hasFormat("lowercase"));
-      setIsCapitalize(selection.hasFormat("capitalize"));
       setIsStrikethrough(selection.hasFormat("strikethrough"));
       setIsSubscript(selection.hasFormat("subscript"));
       setIsSuperscript(selection.hasFormat("superscript"));
@@ -368,7 +363,10 @@ function useFloatingTextFormatToolbar(
         setIsLink(false);
       }
 
-      if (selection.getTextContent() !== "") {
+      if (
+        !$isCodeHighlightNode(selection.anchor.getNode()) &&
+        selection.getTextContent() !== ""
+      ) {
         setIsText($isTextNode(node) || $isParagraphNode(node));
       } else {
         setIsText(false);

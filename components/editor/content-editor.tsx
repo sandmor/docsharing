@@ -23,6 +23,7 @@ import FloatingTextFormatToolbarPlugin from "./plugins/floating-text-format-tool
 import FloatingLinkEditorPlugin from "./plugins/floating-link-editor-plugin";
 import { lexicalCodeTheme, lexicalCodeThemeVarsAuto } from "@/lib/code-theme";
 import "./lexical-code-theme.css";
+import "./lexical.css";
 import CodeHighlightPlugin from "./plugins/code-hightlight";
 import ToolbarPlugin from "./plugins/toolbar-plugin";
 import { useIsMobile } from "@/lib/hooks/use-is-mobile";
@@ -37,6 +38,7 @@ import {
 } from "./plugins/divider-plugin/node";
 import ImagesPlugin, { IMAGE_TRANSFORMER } from "./plugins/image-plugin";
 import { ImageNode } from "./plugins/image-plugin/node";
+import CodeActionMenuPlugin from "./plugins/code-action-menu-plugin";
 
 export const TRANSFORMERS = [
   IMAGE_TRANSFORMER,
@@ -64,7 +66,7 @@ const theme = {
   },
   quote: "border-l-4 border-gray-300 pl-4 italic text-gray-600 mb-2",
   hr: "border-t border-gray-300 my-3",
-  code: "relative block bg-transparent p-0 font-mono text-sm",
+  code: "font-mono lexical-code",
   codeHighlight: lexicalCodeTheme,
   image: "my-4 flex justify-center max-h-[400px]",
   link: "text-blue-600 underline hover:text-blue-800",
@@ -172,6 +174,7 @@ export default function ContentEditor({
               anchorElem={floatingAnchorElem}
             />
             <DraggableBlockPlugin anchorElem={floatingAnchorElem} />
+            <CodeActionMenuPlugin anchorElem={floatingAnchorElem} />
           </>
         )}
         {floatingAnchorElem && !isMobile && (
