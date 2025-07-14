@@ -11,7 +11,7 @@ importers:
       '@aws-sdk/client-s3':
         specifier: ^3.844.0
         version: 3.844.0
-      '@aws-sdk/s3-request-presigner':
+      '@aws-sdk/s3-presigned-post':
         specifier: ^3.844.0
         version: 3.844.0
       '@clerk/nextjs':
@@ -296,8 +296,8 @@ packages:
     resolution: {integrity: sha512-Qjnxd/yDv9KpIMWr90ZDPtRj0v75AqGC92Lm9+oHXZ8p1MjG5JE2CW0HL8JRgK9iKzgKBL7pPQRXI8FkvEVfrA==}
     engines: {node: '>=18.0.0'}
 
-  '@aws-sdk/s3-request-presigner@3.844.0':
-    resolution: {integrity: sha512-i953TKW1rXbd9G2xEgWoJZDoF0Z1ONRlrXkOKDGOrY/uQhAIPNDz5k6tFcXG5oIaLWW197ShENv3CeEJnhfh3g==}
+  '@aws-sdk/s3-presigned-post@3.844.0':
+    resolution: {integrity: sha512-aCcUZho0Ws8qOlr0nKcGXoIR4dmy5rmMlu3DvQCySec3O9QUZIDlxm6McDa1036bz6HMxPpjFV/pL8f2lG7hiA==}
     engines: {node: '>=18.0.0'}
 
   '@aws-sdk/signature-v4-multi-region@3.844.0':
@@ -3085,16 +3085,19 @@ snapshots:
       '@smithy/util-middleware': 4.0.4
       tslib: 2.8.1
 
-  '@aws-sdk/s3-request-presigner@3.844.0':
+  '@aws-sdk/s3-presigned-post@3.844.0':
     dependencies:
-      '@aws-sdk/signature-v4-multi-region': 3.844.0
+      '@aws-sdk/client-s3': 3.844.0
       '@aws-sdk/types': 3.840.0
       '@aws-sdk/util-format-url': 3.840.0
       '@smithy/middleware-endpoint': 4.1.14
-      '@smithy/protocol-http': 5.1.2
-      '@smithy/smithy-client': 4.4.6
+      '@smithy/signature-v4': 5.1.2
       '@smithy/types': 4.3.1
+      '@smithy/util-hex-encoding': 4.0.0
+      '@smithy/util-utf8': 4.0.0
       tslib: 2.8.1
+    transitivePeerDependencies:
+      - aws-crt
 
   '@aws-sdk/signature-v4-multi-region@3.844.0':
     dependencies:

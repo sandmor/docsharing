@@ -1,4 +1,3 @@
-
 import {
   Dialog,
   DialogContent,
@@ -37,12 +36,17 @@ export default function ImageDialog({
           contentType: file.type,
         }),
       });
-      const { url, publicUrl } = await res.json();
-      await fetch(url, {
-        method: "PUT",
-        body: file,
+      const { url, fields, key } = await res.json();
+      const formData = new FormData();
+      Object.entries(fields).forEach(([key, value]) => {
+        formData.append(key, value as string);
       });
-      setUrl(publicUrl);
+      formData.append("file", file);
+      await fetch(url, {
+        method: "POST",
+        body: formData,
+      });
+      setUrl(`${window.location.origin}/api/file/${key}`);
     } catch (error) {
       console.log(error);
     } finally {

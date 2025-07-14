@@ -1,5 +1,5 @@
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { S3Client } from "@aws-sdk/client-s3";
+import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
 import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -21,20 +21,22 @@ export async function POST(req: NextRequest) {
   const { contentType, name } = BodySchema.parse(body);
   const ex = name.split(".").pop();
   const Key = `${randomUUID()}.${ex}`;
-  const command = new PutObjectCommand({
+
+  const maxFileSize = 10 * 1024 * 1024; // 10 MB
+
+  const { url, fields } = await createPresignedPost(s3, {
     Bucket: process.env.AWS_S3_BUCKET_NAME!,
     Key,
-    ContentType: contentType,
+    Expires: 3600,
+    Conditions: [["content-length-range", 0, maxFileSize]],
+    Fields: {
+      "Content-Type": contentType,
+    },
   });
-
-  const url = await getSignedUrl(s3, command, {
-    expiresIn: 3600,
-  });
-  const publicUrl = `https://${process.env.AWS_S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${Key}`;
 
   return NextResponse.json({
     url,
+    fields,
     key: Key,
-    publicUrl,
   });
 }
