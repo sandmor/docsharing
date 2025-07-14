@@ -66,6 +66,7 @@ const theme = {
   hr: "border-t border-gray-300 my-3",
   code: "relative block bg-transparent p-0 font-mono text-sm",
   codeHighlight: lexicalCodeTheme,
+  image: "my-4 flex justify-center max-h-[400px]",
   link: "text-blue-600 underline hover:text-blue-800",
   text: {
     bold: "font-bold",

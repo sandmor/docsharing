@@ -111,6 +111,10 @@ export class ImageNode extends DecoratorNode<React.JSX.Element> {
   decorate(): React.JSX.Element {
     return <img src={this.__src} alt={this.__altText} />;
   }
+
+  isInline(): boolean {
+    return false;
+  }
 }
 
 export function $createImageNode({
