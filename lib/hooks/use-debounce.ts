@@ -13,8 +13,8 @@ export function useDebounce<F extends AnyFunction>(
   maxWait?: number
 ): DebouncedFunction<F> {
   const funcRef = useRef(func);
-  const timeoutRef = useRef<NodeJS.Timeout>();
-  const maxTimeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const maxTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   useEffect(() => {
     funcRef.current = func;
