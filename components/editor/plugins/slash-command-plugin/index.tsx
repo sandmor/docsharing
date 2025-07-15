@@ -21,6 +21,10 @@ import { slashCommandMenuConfig } from "./menu-config";
 import { slashCommandActionHandler } from "./slash-actions";
 import ImageDialog from "../image-plugin/image-dialog";
 import { INSERT_IMAGE_COMMAND } from "../image-plugin";
+import {
+  InsertEquationDialog,
+  INSERT_EQUATION_COMMAND,
+} from "../equations-plugin";
 
 interface SlashCommandContextData {
   textNode: TextNode;
@@ -39,6 +43,7 @@ export default function SlashCommandPlugin({
   const [editor] = useLexicalComposerContext();
   const [queryString, setQueryString] = useState("");
   const [isImageDialogVisible, setIsImageDialogVisible] = useState(false);
+  const [isEquationDialogVisible, setIsEquationDialogVisible] = useState(false);
 
   const positioning: PositioningConfig = {
     alignment: menuAlignment,
@@ -57,8 +62,11 @@ export default function SlashCommandPlugin({
     menuDimensions: { width: 220, height: 200 },
   });
 
-  const actionHandler = slashCommandActionHandler(editor, closeMenu, () =>
-    setIsImageDialogVisible(true)
+  const actionHandler = slashCommandActionHandler(
+    editor,
+    closeMenu,
+    () => setIsImageDialogVisible(true),
+    () => setIsEquationDialogVisible(true)
   );
 
   const filteredItems = slashCommandMenuConfig.items.filter(
@@ -190,6 +198,12 @@ export default function SlashCommandPlugin({
           setIsImageDialogVisible(false);
         }}
       />
+      {isEquationDialogVisible && (
+        <InsertEquationDialog
+          activeEditor={editor}
+          onClose={() => setIsEquationDialogVisible(false)}
+        />
+      )}
     </>
   );
 }

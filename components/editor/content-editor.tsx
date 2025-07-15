@@ -39,10 +39,16 @@ import {
 import ImagesPlugin, { IMAGE_TRANSFORMER } from "./plugins/image-plugin";
 import { ImageNode } from "./plugins/image-plugin/node";
 import CodeActionMenuPlugin from "./plugins/code-action-menu-plugin";
+import EquationPlugin from "./plugins/equations-plugin";
+import {
+  EQUATION_TRANSFORMER,
+  EquationNode,
+} from "./plugins/equations-plugin/equation-node";
 
 export const TRANSFORMERS = [
   IMAGE_TRANSFORMER,
   DIVIDER_TRANSFORMER,
+  EQUATION_TRANSFORMER,
   ...VENDORED_TRANSFORMERS,
 ];
 
@@ -133,6 +139,7 @@ export default function ContentEditor({
       LinkNode,
       DividerNode,
       ImageNode,
+      EquationNode,
     ],
   };
 
@@ -165,6 +172,7 @@ export default function ContentEditor({
         <DividerPlugin />
         <CodeHighlightPlugin />
         <ImagesPlugin />
+        <EquationPlugin />
         <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
         <SmartListBackspacePlugin />
         {floatingAnchorElem && !isSmallScreen && (

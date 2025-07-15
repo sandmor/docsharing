@@ -9,7 +9,6 @@ import { $createCodeNode } from "@lexical/code";
 import { $createQuoteNode } from "@lexical/rich-text";
 import { ActionHandler } from "@/components/ui/context-menu";
 import { $createDividerNode } from "../divider-plugin/node";
-import { INSERT_IMAGE_COMMAND } from "../image-plugin";
 
 interface SlashCommandContextData {
   textNode: TextNode;
@@ -19,7 +18,8 @@ interface SlashCommandContextData {
 export const slashCommandActionHandler = (
   editor: any,
   closeMenu: () => void,
-  openImageDialog: () => void
+  openImageDialog: () => void,
+  openEquationDialog: () => void
 ): ActionHandler => ({
   handleAction: (action: string, contextData: SlashCommandContextData) => {
     const { textNode } = contextData;
@@ -85,6 +85,9 @@ export const slashCommandActionHandler = (
             break;
           case "insert-image":
             openImageDialog();
+            break;
+          case "insert-equation":
+            openEquationDialog();
             break;
           default:
             newNode = $createParagraphNode();
