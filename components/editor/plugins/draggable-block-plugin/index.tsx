@@ -7,6 +7,7 @@ import { Plus, GripVertical } from "lucide-react";
 import { $isHeadingNode, $isQuoteNode } from "@lexical/rich-text";
 import { $isListNode } from "@lexical/list";
 import { $isCodeNode } from "@lexical/code";
+import { OPEN_SLASH_COMMAND_MENU_COMMAND } from "../slash-command-plugin";
 
 import {
   ContextMenu,
@@ -61,19 +62,25 @@ export default function DraggableBlockPlugin({
       return;
     }
 
-    editor.update(() => {
+    const buttonRect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const coordinates = {
+      x: buttonRect.left,
+      y: buttonRect.top,
+      width: buttonRect.width,
+      height: buttonRect.height,
+    };
+
+    editor.read(() => {
       const node = $getNearestNodeFromDOMNode(draggableElement);
       if (!node) {
         return;
       }
 
-      const pNode = $createParagraphNode();
-      if (e.altKey || e.ctrlKey) {
-        node.insertBefore(pNode);
-      } else {
-        node.insertAfter(pNode);
-      }
-      pNode.select();
+      editor.dispatchCommand(OPEN_SLASH_COMMAND_MENU_COMMAND, {
+        coordinates,
+        node,
+        action: e.altKey || e.ctrlKey ? "insertBefore" : "insertAfter",
+      });
     });
   }
 
@@ -118,17 +125,27 @@ export default function DraggableBlockPlugin({
       nodeKey,
     };
 
+    const buttonRect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const coordinates = {
+      x: buttonRect.left,
+      y: buttonRect.top,
+      width: buttonRect.width,
+      height: buttonRect.height,
+    };
+
     if (menuState.isOpen) {
       if (menuState.contextData?.nodeKey === nodeKey) {
         closeMenu();
         return;
       }
       closeMenu();
-      setTimeout(() => openMenu(draggableElement, e, contextData), 50);
+      setTimeout(() => {
+        openMenu(coordinates, contextData);
+      }, 50);
       return;
     }
 
-    openMenu(draggableElement, e, contextData);
+    openMenu(coordinates, contextData);
   };
 
   return (

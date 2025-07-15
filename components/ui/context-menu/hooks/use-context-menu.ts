@@ -8,6 +8,13 @@ export interface UseContextMenuProps {
   menuDimensions?: { width: number; height: number };
 }
 
+export interface MenuCoordinates {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export const useContextMenu = ({
   anchorElement,
   positioning,
@@ -16,18 +23,23 @@ export const useContextMenu = ({
   const [menuState, setMenuState] = useState<MenuState>({
     isOpen: false,
     position: { x: 0, y: 0 },
-    activeElement: null,
     originPosition: { x: 0, y: 0 },
     contextData: null,
   });
 
   const openMenu = useCallback(
-    (
-      triggerElement: HTMLElement,
-      event: React.MouseEvent,
-      contextData: any
-    ) => {
-      const rect = event.currentTarget.getBoundingClientRect();
+    (coordinates: MenuCoordinates, contextData: any = null) => {
+      const rect = {
+        left: coordinates.x,
+        top: coordinates.y,
+        width: coordinates.width,
+        height: coordinates.height,
+        right: coordinates.x + coordinates.width,
+        bottom: coordinates.y + coordinates.height,
+        x: coordinates.x,
+        y: coordinates.y,
+        toJSON: () => ({}),
+      } as DOMRect;
       const anchorRect = anchorElement.getBoundingClientRect();
 
       const position = calculateMenuPosition(
@@ -37,13 +49,17 @@ export const useContextMenu = ({
         menuDimensions
       );
 
-      const originX = rect.left + rect.width / 2 - anchorRect.left;
-      const originY = rect.top + rect.height / 2 - anchorRect.top;
+      // Convert trigger coordinates to anchor-relative coordinates
+      const triggerCenterX = rect.left + rect.width / 2 - anchorRect.left;
+      const triggerCenterY = rect.top + rect.height / 2 - anchorRect.top;
+
+      // Calculate origin relative to final menu position
+      const originX = triggerCenterX - position.x;
+      const originY = triggerCenterY - position.y;
 
       setMenuState({
         isOpen: true,
         position,
-        activeElement: triggerElement,
         originPosition: { x: originX, y: originY },
         contextData,
       });
@@ -60,15 +76,11 @@ export const useContextMenu = ({
   }, []);
 
   const toggleMenu = useCallback(
-    (
-      triggerElement: HTMLElement,
-      event: React.MouseEvent,
-      contextData: any
-    ) => {
+    (coordinates: MenuCoordinates, contextData: any = null) => {
       if (menuState.isOpen) {
         closeMenu();
       } else {
-        openMenu(triggerElement, event, contextData);
+        openMenu(coordinates, contextData);
       }
     },
     [menuState.isOpen, openMenu, closeMenu]

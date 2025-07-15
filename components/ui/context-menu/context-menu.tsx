@@ -116,8 +116,8 @@ export const ContextMenu = ({
         initial={{
           opacity: 0,
           scale: 0.3,
-          x: state.originPosition.x - state.position.x,
-          y: state.originPosition.y - state.position.y,
+          x: state.originPosition.x,
+          y: state.originPosition.y,
         }}
         animate={{
           opacity: 1,
@@ -128,8 +128,8 @@ export const ContextMenu = ({
         exit={{
           opacity: 0,
           scale: 0.3,
-          x: state.originPosition.x - state.position.x,
-          y: state.originPosition.y - state.position.y,
+          x: state.originPosition.x,
+          y: state.originPosition.y,
         }}
         transition={{
           type: "spring",

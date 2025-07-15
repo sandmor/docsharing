@@ -4,10 +4,12 @@ import { useEffect, useState, useCallback } from "react";
 import {
   $getSelection,
   $isRangeSelection,
-  TextNode,
   $isTextNode,
   COMMAND_PRIORITY_NORMAL,
   KEY_ESCAPE_COMMAND,
+  createCommand,
+  LexicalCommand,
+  LexicalNode,
 } from "lexical";
 
 import {
@@ -21,14 +23,24 @@ import { slashCommandMenuConfig } from "./menu-config";
 import { slashCommandActionHandler } from "./slash-actions";
 import ImageDialog from "../image-plugin/image-dialog";
 import { INSERT_IMAGE_COMMAND } from "../image-plugin";
-import {
-  InsertEquationDialog,
-  INSERT_EQUATION_COMMAND,
-} from "../equations-plugin";
+import { InsertEquationDialog } from "../equations-plugin";
+import { MenuCoordinates } from "@/components/ui/context-menu/hooks/use-context-menu";
 
-interface SlashCommandContextData {
-  textNode: TextNode;
+export const OPEN_SLASH_COMMAND_MENU_COMMAND: LexicalCommand<OpenSlashMenuPayload> =
+  createCommand("OPEN_SLASH_COMMAND_MENU_COMMAND");
+
+type Actions = "replace" | "insertBefore" | "insertAfter";
+
+type OpenSlashMenuPayload = {
+  coordinates: MenuCoordinates;
+  node: LexicalNode;
+  action: Actions;
+};
+
+export interface SlashCommandContextData {
+  node: LexicalNode;
   offset: number;
+  action: Actions;
 }
 
 export default function SlashCommandPlugin({
@@ -62,6 +74,46 @@ export default function SlashCommandPlugin({
     menuDimensions: { width: 220, height: 200 },
   });
 
+  const showMenu = useCallback(() => {
+    const domSelection = window.getSelection();
+    if (domSelection === null || domSelection.rangeCount === 0) {
+      return;
+    }
+    const domRange = domSelection.getRangeAt(0);
+    const rect = domRange.getBoundingClientRect();
+
+    const target =
+      domRange.startContainer instanceof Element
+        ? domRange.startContainer
+        : domRange.startContainer.parentElement;
+
+    if (target) {
+      const coordinates = {
+        x: rect.left,
+        y: rect.top,
+        width: Math.max(rect.width, 1), // Ensure minimum width for collapsed selections
+        height: Math.max(rect.height, 16), // Ensure minimum height for positioning
+      };
+
+      editor.update(() => {
+        const selection = $getSelection();
+        if (!$isRangeSelection(selection)) {
+          console.error("Selection is not a range selection");
+          return;
+        }
+        const anchorNode = selection.anchor.getNode();
+        const anchorOffset = selection.anchor.offset;
+
+        const contextData: SlashCommandContextData = {
+          node: anchorNode,
+          offset: anchorOffset,
+          action: "replace",
+        };
+        openMenu(coordinates, contextData);
+      });
+    }
+  }, [editor, openMenu]);
+
   const actionHandler = slashCommandActionHandler(
     editor,
     closeMenu,
@@ -89,6 +141,23 @@ export default function SlashCommandPlugin({
     },
     [menuState.isOpen, closeMenu]
   );
+
+  useEffect(() => {
+    const removeCommand = editor.registerCommand(
+      OPEN_SLASH_COMMAND_MENU_COMMAND,
+      ({ coordinates, node, action }: OpenSlashMenuPayload) => {
+        const contextData: SlashCommandContextData = {
+          node: node,
+          offset: 0,
+          action,
+        };
+        openMenu(coordinates, contextData);
+        return true;
+      },
+      COMMAND_PRIORITY_NORMAL
+    );
+    return () => removeCommand();
+  }, [editor, showMenu]);
 
   useEffect(() => {
     const removeEscapeListener = editor.registerCommand(
@@ -136,24 +205,8 @@ export default function SlashCommandPlugin({
           // Check if the text node is at the beginning of a paragraph and is empty except for the slash command
           const parentNode = anchorNode.getParent();
           if (parentNode && textContent.startsWith("/")) {
-            const contextData: SlashCommandContextData = {
-              textNode: anchorNode,
-              offset: anchorOffset,
-            };
-
             if (!menuState.isOpen) {
-              // Get the DOM node to position the menu
-              const domNode = editor.getElementByKey(anchorNode.getKey());
-              if (domNode) {
-                const rect = domNode.getBoundingClientRect();
-                const fakeEvent = {
-                  currentTarget: domNode,
-                  clientX: rect.left,
-                  clientY: rect.bottom,
-                  getBoundingClientRect: () => rect,
-                } as any;
-                openMenu(domNode, fakeEvent, contextData);
-              }
+              showMenu();
             }
           }
         } else {
@@ -165,7 +218,7 @@ export default function SlashCommandPlugin({
     });
 
     return updateListener;
-  }, [editor, menuState.isOpen, openMenu, closeMenu]);
+  }, [editor, menuState.isOpen, openMenu, closeMenu, showMenu]);
 
   return (
     <>

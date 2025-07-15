@@ -1,4 +1,4 @@
-import { $createParagraphNode, TextNode } from "lexical";
+import { $createParagraphNode, $isTextNode, TextNode } from "lexical";
 import { $createHeadingNode } from "@lexical/rich-text";
 import {
   $createListNode,
@@ -9,11 +9,7 @@ import { $createCodeNode } from "@lexical/code";
 import { $createQuoteNode } from "@lexical/rich-text";
 import { ActionHandler } from "@/components/ui/context-menu";
 import { $createDividerNode } from "../divider-plugin/node";
-
-interface SlashCommandContextData {
-  textNode: TextNode;
-  offset: number;
-}
+import { SlashCommandContextData } from ".";
 
 export const slashCommandActionHandler = (
   editor: any,
@@ -22,21 +18,23 @@ export const slashCommandActionHandler = (
   openEquationDialog: () => void
 ): ActionHandler => ({
   handleAction: (action: string, contextData: SlashCommandContextData) => {
-    const { textNode } = contextData;
+    const { node, action: contextAction } = contextData;
 
-    if (!textNode || !editor) {
+    if (!node || !editor) {
       return;
     }
 
     editor.update(() => {
-      const parentNode = textNode.getParent();
-      if (!parentNode) return;
+      const paragraphNode = node.getParent();
+      if (!paragraphNode) return; // Satisfy TypeScript
 
-      // Remove the slash command text
-      const textContent = textNode.getTextContent();
-      const slashMatch = textContent.match(/^\/.*$/);
-      if (slashMatch) {
-        textNode.setTextContent("");
+      if ($isTextNode(node)) {
+        // Remove the slash command text
+        const textContent = node.getTextContent();
+        const slashMatch = textContent.match(/^\/.*$/);
+        if (slashMatch) {
+          node.setTextContent("");
+        }
       }
 
       let newNode;
@@ -94,8 +92,18 @@ export const slashCommandActionHandler = (
         }
 
         if (newNode) {
-          // Replace the current paragraph with the new node
-          parentNode.replace(newNode);
+          switch (contextAction) {
+            case "replace":
+              paragraphNode.replace(newNode);
+              break;
+            case "insertBefore":
+              node.insertBefore(newNode);
+              break;
+            case "insertAfter":
+              node.insertAfter(newNode);
+              break;
+            default:
+          }
 
           // Focus the new node
           if ($isListNode(newNode)) {

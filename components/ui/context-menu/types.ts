@@ -22,7 +22,6 @@ export interface MenuPosition {
 export interface MenuState {
   isOpen: boolean;
   position: MenuPosition;
-  activeElement: HTMLElement | null;
   originPosition: MenuPosition;
   contextData: any; // Generic context data for the menu
 }
