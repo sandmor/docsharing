@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { MenuConfig } from "@/components/ui/context-menu";
 
-export const blockMenuConfig: MenuConfig = {
+export const commonBlockMenuConfig: MenuConfig = {
   title: "Block Actions",
   showHeader: true,
   alignment: "left",
@@ -44,6 +44,16 @@ export const blockMenuConfig: MenuConfig = {
         { label: "Quote", icon: Quote, action: "turn-into-quote" },
       ],
     },
+    { label: "Duplicate", icon: Copy, action: "duplicate" },
+    { label: "Delete", icon: Trash2, action: "delete", destructive: true },
+  ],
+};
+
+export const specialBlockMenuConfig: MenuConfig = {
+  title: "Block Actions",
+  showHeader: true,
+  alignment: "left",
+  items: [
     { label: "Duplicate", icon: Copy, action: "duplicate" },
     { label: "Delete", icon: Trash2, action: "delete", destructive: true },
   ],

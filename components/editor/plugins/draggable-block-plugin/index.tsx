@@ -1,7 +1,7 @@
 import type { JSX } from "react";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { DraggableBlockPlugin_EXPERIMENTAL } from "@lexical/react/LexicalDraggableBlockPlugin";
-import { $createParagraphNode, $getNearestNodeFromDOMNode } from "lexical";
+import { $getNearestNodeFromDOMNode, $isParagraphNode } from "lexical";
 import { useRef, useState } from "react";
 import { Plus, GripVertical } from "lucide-react";
 import { $isHeadingNode, $isQuoteNode } from "@lexical/rich-text";
@@ -15,7 +15,7 @@ import {
   MenuAlignment,
   PositioningConfig,
 } from "../../../ui/context-menu";
-import { blockMenuConfig } from "./menu-config";
+import { commonBlockMenuConfig } from "./menu-config";
 import { blockCheckBehavior, BlockContextData } from "./block-checker";
 import { createBlockActionHandler } from "./block-actions";
 import { isOnMenu } from "./utils";
@@ -33,6 +33,7 @@ export default function DraggableBlockPlugin({
   const [editor] = useLexicalComposerContext();
   const menuRef = useRef<HTMLDivElement>(null);
   const targetLineRef = useRef<HTMLDivElement>(null);
+  const [menuConfig, setMenuConfig] = useState(commonBlockMenuConfig);
 
   const [draggableElement, setDraggableElement] = useState<HTMLElement | null>(
     null
@@ -98,7 +99,9 @@ export default function DraggableBlockPlugin({
         const node = $getNearestNodeFromDOMNode(draggableElement);
         if (node) {
           nodeKey = node.getKey();
-          if ($isHeadingNode(node)) {
+          if ($isParagraphNode(node)) {
+            blockType = "text";
+          } else if ($isHeadingNode(node)) {
             blockType = `h${node.getTag().substring(1)}`;
           } else if ($isListNode(node)) {
             blockType =
@@ -109,8 +112,6 @@ export default function DraggableBlockPlugin({
             blockType = "quote";
           } else if ($isDividerNode(node)) {
             blockType = "divider";
-          } else {
-            blockType = "text";
           }
         }
       } catch (error) {
@@ -155,25 +156,27 @@ export default function DraggableBlockPlugin({
         menuRef={menuRef as any}
         targetLineRef={targetLineRef as any}
         menuComponent={
-          <div
-            ref={menuRef}
-            className={`absolute left-0 top-0 z-50 flex cursor-grab gap-0.5 rounded-sm p-0.5 opacity-0 will-change-transform hover:opacity-100 ${DRAGGABLE_BLOCK_MENU_CLASSNAME}`}
-          >
-            <button
-              title="Click to add below"
-              className="cursor-pointer border-none bg-transparent p-0.5 opacity-30 hover:bg-gray-200 hover:opacity-100 rounded"
-              onClick={insertBlock}
+          !menuState.isOpen && (
+            <div
+              ref={menuRef}
+              className={`absolute left-0 top-0 z-50 flex cursor-grab gap-0.5 rounded-sm p-0.5 opacity-0 will-change-transform hover:opacity-100 ${DRAGGABLE_BLOCK_MENU_CLASSNAME}`}
             >
-              <Plus className="h-4 w-4" />
-            </button>
-            <button
-              title="More options"
-              className="cursor-pointer border-none bg-transparent p-0.5 opacity-30 hover:bg-gray-200 hover:opacity-100 rounded"
-              onClick={handleGripClick}
-            >
-              <GripVertical className="h-4 w-4" />
-            </button>
-          </div>
+              <button
+                title="Click to add below"
+                className="cursor-pointer border-none bg-transparent p-0.5 opacity-30 hover:bg-gray-200 hover:opacity-100 rounded"
+                onClick={insertBlock}
+              >
+                <Plus className="h-4 w-4" />
+              </button>
+              <button
+                title="More options"
+                className="cursor-pointer border-none bg-transparent p-0.5 opacity-30 hover:bg-gray-200 hover:opacity-100 rounded"
+                onClick={handleGripClick}
+              >
+                <GripVertical className="h-4 w-4" />
+              </button>
+            </div>
+          )
         }
         targetLineComponent={
           <div
@@ -186,7 +189,7 @@ export default function DraggableBlockPlugin({
       />
 
       <ContextMenu
-        config={blockMenuConfig}
+        config={commonBlockMenuConfig}
         state={menuState}
         checkBehavior={blockCheckBehavior}
         actionHandler={actionHandler}
