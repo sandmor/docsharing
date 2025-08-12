@@ -18,6 +18,9 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "DocShare app",
   description: "A note taking and document sharing app",
+  icons: {
+    icon: "/Icon.svg",
+  },
 };
 
 export default function RootLayout({

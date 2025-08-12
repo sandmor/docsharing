@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## DocSharing
 
-## Getting Started
+Next.js 15 / React 19 app with tRPC (RSC), Prisma, Clerk auth, shadcn/ui, Lexical editor, S3 asset storage.
 
-First, run the development server:
+## Package Manager
+Project standard: pnpm (locked via `packageManager` field).
 
+Install dependencies:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Dev server:
+```bash
+pnpm dev
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Build & start:
+```bash
+pnpm build
+pnpm start
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Lint:
+```bash
+pnpm lint
+```
 
-## Learn More
+Prisma migrate (example):
+```bash
+pnpm prisma migrate dev --name <migration-name>
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Environment
+Copy `.env.example` to `.env.local` and fill AWS, Clerk, Database credentials.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Key vars:
+- `DATABASE_URL` – Postgres connection.
+- `DOCUMENT_MAX_BYTES` – Max allowed markdown size (bytes). Server enforces; client reads build-time public env `NEXT_PUBLIC_DOCUMENT_MAX_BYTES` for early validation.
+- `AWS_*` – S3 bucket + credentials for file storage.
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` / `CLERK_SECRET_KEY` – Clerk auth keys.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Changing `DOCUMENT_MAX_BYTES` requires a server restart. Clients auto pick up the new limit after hydration because it’s fetched through tRPC.
 
-## Deploy on Vercel
+## Import / Export Markdown
+Use the split New button (left: blank, right caret: options) to create a blank doc or import a `.md` file. Import flow:
+1. Client uses `NEXT_PUBLIC_DOCUMENT_MAX_BYTES` for a quick size pre-check.
+2. Server validates (authoritative) using `DOCUMENT_MAX_BYTES` (UTF-8 byte length).
+3. Any referenced `/api/file/<fileKey>` assets you own are re-linked.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Export: use per-document menu → Download (returns raw markdown).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Deployment
+Deploy on platforms supporting Next.js 15 (e.g. Vercel). Ensure environment variables and database are provisioned; run `pnpm build` then serve with `pnpm start`.
