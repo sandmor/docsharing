@@ -11,6 +11,7 @@ import {
   Heading5,
   Heading6,
   Quote,
+  ListChecks,
 } from "lucide-react";
 import { MenuConfig } from "@/components/ui/context-menu";
 
@@ -39,6 +40,11 @@ export const commonBlockMenuConfig: MenuConfig = {
           label: "Ordered list",
           icon: List,
           action: "turn-into-ordered-list",
+        },
+        {
+          label: "Checklist",
+          icon: ListChecks,
+          action: "turn-into-checklist",
         },
         { label: "Code", icon: Code, action: "turn-into-code" },
         { label: "Quote", icon: Quote, action: "turn-into-quote" },

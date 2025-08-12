@@ -104,8 +104,13 @@ export default function DraggableBlockPlugin({
           } else if ($isHeadingNode(node)) {
             blockType = `h${node.getTag().substring(1)}`;
           } else if ($isListNode(node)) {
+            const listType = node.getListType();
             blockType =
-              node.getListType() === "bullet" ? "bullet-list" : "ordered-list";
+              listType === "bullet"
+                ? "bullet-list"
+                : listType === "check"
+                ? "checklist"
+                : "ordered-list";
           } else if ($isCodeNode(node)) {
             blockType = "code";
           } else if ($isQuoteNode(node)) {

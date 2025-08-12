@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="260.71741"
+   height="188.2"
+   viewBox="0 0 68.981479 49.794583"
+   version="1.1"
+   id="svg1"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1">
+    <linearGradient
+       id="linearGradient6">
+      <stop
+         style="stop-color:#bbc4ff;stop-opacity:1;"
+         offset="0"
+         id="stop6" />
+      <stop
+         style="stop-color:#c3d2ff;stop-opacity:1;"
+         offset="1"
+         id="stop7" />
+    </linearGradient>
+    <linearGradient
+       xlink:href="#linearGradient6"
+       id="linearGradient7"
+       x1="25.856548"
+       y1="34.519489"
+       x2="35.832058"
+       y2="20.343767"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
+  <g
+     id="layer1"
+     transform="translate(0.39479089,0.39479077)">
+    <path
+       style="fill:none;fill-opacity:1;stroke:#ffe44c;stroke-width:3.60415;stroke-dasharray:none;stroke-opacity:1"
+       id="path1"
+       d="m 29.366921,28.969083 0,-7.262541 6.289545,3.63127 z"
+       transform="matrix(0.50129811,0,0,1.0750349,48.905413,-14.894969)" />
+    <path
+       id="rect1"
+       style="fill:url(#linearGradient7);fill-opacity:1;stroke:#4c67ff;stroke-width:2.64583;stroke-dasharray:none"
+       d="m 18.126075,0.92812586 h 37.773188 c 3.664479,0 6.614583,2.95010404 6.614583,6.61458304 V 41.462293 c 0,3.664479 -2.950104,6.614583 -6.614583,6.614583 H 7.5427088 c -3.664479,0 -6.61458306,-2.950104 -6.61458306,-6.614583 V 18.126075 Z" />
+    <circle
+       style="fill:none;fill-opacity:1;stroke:#4c67ff;stroke-width:2.64583;stroke-dasharray:none;stroke-opacity:1"
+       id="path3"
+       cx="50.741146"
+       cy="12.344064"
+       r="3.2484374" />
+    <path
+       style="fill:none;fill-opacity:1;stroke:#4c67ff;stroke-width:2.64583;stroke-dasharray:none;stroke-opacity:1"
+       d="m 18.126075,0.92812586 -2e-6,11.24482414 v 0 c 0,3.287819 -2.665304,5.953123 -5.953123,5.953123 v 2e-6 H 0.92812575"
+       id="path5" />
+  </g>
+</svg>

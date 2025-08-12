@@ -55,8 +55,17 @@ export const createBlockActionHandler = (editor: any): ActionHandler => ({
                 `h${headingLevel}` as HeadingTagType
               );
             }
-          } else if (type === "bullet" || type === "ordered") {
-            const listType = type === "bullet" ? "bullet" : "number";
+          } else if (
+            type === "bullet" ||
+            type === "ordered" ||
+            type === "checklist"
+          ) {
+            const listType =
+              type === "ordered"
+                ? "number"
+                : type === "checklist"
+                ? "check"
+                : "bullet";
             const list = $createListNode(listType);
             newNode = list;
           } else if (type === "code") {

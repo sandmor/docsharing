@@ -63,12 +63,24 @@ const theme = {
     h6: "text-sm font-bold mb-2",
   },
   list: {
+    checklist: "list-none",
+    listitem: "mb-1 PlaygroundEditorTheme__listItem",
+    listitemChecked:
+      "line-through PlaygroundEditorTheme__listItemChecked",
+    listitemUnchecked:
+      "PlaygroundEditorTheme__listItemUnchecked",
     nested: {
       listitem: "list-none",
     },
-    ol: "list-decimal ml-4 mb-2",
-    ul: "list-disc ml-4 mb-2",
-    listitem: "mb-1",
+    ol: "list-decimal list-outside ml-4 mb-2",
+    olDepth: [
+      "list-decimal list-outside",
+      "[list-style-type:upper-alpha] list-outside",
+      "[list-style-type:lower-alpha] list-outside",
+      "[list-style-type:upper-roman] list-outside",
+      "[list-style-type:lower-roman] list-outside",
+    ],
+    ul: "list-disc list-outside ml-4 mb-2",
   },
   quote: "border-l-4 border-gray-300 pl-4 italic text-gray-600 mb-2",
   hr: "border-t border-gray-300 my-3",
