@@ -72,6 +72,7 @@ export default function Viewer({ docId }: ViewerProps) {
       li: ({ children }: any) => (
         <li className="text-gray-700 leading-relaxed">{children}</li>
       ),
+      hr: () => <hr className="my-8 border-gray-200" />,
     }),
     []
   );
