@@ -70,8 +70,10 @@ function Toolbar({
   return (
     <div
       className={cn(
-        "sticky top-0 z-10 flex mb-px bg-white p-1 vertical-align-middle border-gray-200",
+        "sticky z-10 flex mb-px bg-white p-1 vertical-align-middle border-gray-200",
         {
+          "top-0": position === "top",
+          "bottom-0": position === "bottom",
           "rounded-t-lg": position === "top",
           "border-b": position === "top",
           "rounded-b-lg": position === "bottom",
@@ -217,9 +219,11 @@ function Toolbar({
 
 export default function ToolbarPlugin({
   scrollerRef,
+  floatingRef,
   position,
 }: {
   scrollerRef?: React.RefObject<HTMLDivElement | null>;
+  floatingRef?: React.RefObject<HTMLDivElement | null>;
   position: "top" | "bottom";
 }): JSX.Element | null {
   const [editor] = useLexicalComposerContext();
@@ -234,7 +238,6 @@ export default function ToolbarPlugin({
   const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo] = useState(false);
   const [isLinkEditorOpen, setIsLinkEditorOpen] = useState(false);
-  const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
   const [scrollOffset, setScrollOffset] = useState(0);
 
   const rafRef = useRef<number | null>(null);
@@ -262,12 +265,14 @@ export default function ToolbarPlugin({
 
   // Handle scroll with requestAnimationFrame for smooth updates
   const handleScroll = useCallback(() => {
-    rafRef.current = requestAnimationFrame(() => {
-      const currentScrollY = scrollerRef?.current?.scrollTop || 0;
-      const newOffset = -Math.min(16, currentScrollY);
-      setScrollOffset(newOffset);
-    });
-  }, []);
+    if (position === "top") {
+      rafRef.current = requestAnimationFrame(() => {
+        const currentScrollY = scrollerRef?.current?.scrollTop || 0;
+        const newOffset = -Math.min(16, currentScrollY);
+        setScrollOffset(newOffset);
+      });
+    }
+  }, [position]);
 
   useEffect(() => {
     // Add scroll listener
@@ -337,7 +342,7 @@ export default function ToolbarPlugin({
         canUndo={canUndo}
         canRedo={canRedo}
         openLinkEditor={openLinkEditor}
-        scrollOffset={scrollOffset}
+        scrollOffset={position === "top" ? scrollOffset : 0}
         position={position}
       />
       <LinkEditorDialog

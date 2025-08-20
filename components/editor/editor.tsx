@@ -54,7 +54,7 @@ export default function Editor({ documentId }: EditorProps) {
 
   return (
     <div
-      className="absolute inset-0 flex flex-col overflow-auto p-4"
+      className="absolute inset-0 flex flex-col overflow-auto"
       ref={scrollerRef}
     >
       <ContentEditor

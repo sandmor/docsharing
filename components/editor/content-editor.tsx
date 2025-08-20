@@ -15,7 +15,7 @@ import {
   TRANSFORMERS as VENDORED_TRANSFORMERS,
 } from "@lexical/markdown";
 import { useEditorStore } from "@/lib/hooks/useEditorStore";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 import { LinkPlugin } from "@lexical/react/LexicalLinkPlugin";
 import { InitialContentPlugin } from "./plugins/initial-content";
@@ -111,17 +111,10 @@ export default function ContentEditor({
   const setMarkdownContent = useEditorStore(
     (state) => state.setMarkdownContent
   );
-  const [floatingAnchorElem, setFloatingAnchorElem] =
-    useState<HTMLDivElement | null>(null);
+  const floatingAnchorElemRef = useRef<HTMLDivElement | null>(null);
   const [isLinkEditMode, setIsLinkEditMode] = useState(false);
   const isMobile = useIsMobile();
   const isSmallScreen = useMediaQuery("(max-width: 768px)");
-
-  const onRef = (_floatingAnchorElem: HTMLDivElement) => {
-    if (_floatingAnchorElem !== null) {
-      setFloatingAnchorElem(_floatingAnchorElem);
-    }
-  };
 
   const onChange = useCallback(
     (editorState: EditorState) => {
@@ -155,7 +148,7 @@ export default function ContentEditor({
     ],
   };
 
-  return (
+  return (<div className="p-4">
     <div
       className="border border-gray-300 rounded-lg flex-1 flex flex-col"
       style={lexicalCodeThemeVarsAuto}
@@ -167,7 +160,7 @@ export default function ContentEditor({
         <div className="relative flex-1 flex flex-col">
           <RichTextPlugin
             contentEditable={
-              <div ref={onRef} className="flex-1">
+              <div ref={floatingAnchorElemRef} className="flex-1">
                 <ContentEditable className="p-4 h-full outline-none text-gray-900 resize-none leading-relaxed md:px-13 cursor-text" />
               </div>
             }
@@ -175,7 +168,7 @@ export default function ContentEditor({
           />
         </div>
         {isSmallScreen && (
-          <ToolbarPlugin scrollerRef={scrollerRef} position="bottom" />
+          <ToolbarPlugin scrollerRef={scrollerRef} floatingRef={floatingAnchorElemRef} position="bottom" />
         )}
         <HistoryPlugin />
         <LinkPlugin
@@ -187,25 +180,25 @@ export default function ContentEditor({
         <EquationPlugin />
         <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
         <SmartListBackspacePlugin />
-        {floatingAnchorElem && !isSmallScreen && (
+        {floatingAnchorElemRef.current && !isSmallScreen && (
           <>
             <SlashCommandPlugin
               documentId={documentId}
-              anchorElem={floatingAnchorElem}
+              anchorElem={floatingAnchorElemRef.current}
             />
-            <DraggableBlockPlugin anchorElem={floatingAnchorElem} />
-            <CodeActionMenuPlugin anchorElem={floatingAnchorElem} />
+            <DraggableBlockPlugin anchorElem={floatingAnchorElemRef.current} />
+            <CodeActionMenuPlugin anchorElem={floatingAnchorElemRef.current} />
           </>
         )}
-        {floatingAnchorElem && !isMobile && (
+        {floatingAnchorElemRef.current && !isMobile && (
           <>
             <FloatingLinkEditorPlugin
-              anchorElem={floatingAnchorElem}
+              anchorElem={floatingAnchorElemRef.current}
               isLinkEditMode={isLinkEditMode}
               setIsLinkEditMode={setIsLinkEditMode}
             />
             <FloatingTextFormatToolbarPlugin
-              anchorElem={floatingAnchorElem}
+              anchorElem={floatingAnchorElemRef.current}
               setIsLinkEditMode={setIsLinkEditMode}
             />
           </>
@@ -215,6 +208,6 @@ export default function ContentEditor({
         )}
         <OnChangePlugin onChange={onChange} />
       </LexicalComposer>
-    </div>
+    </div></div>
   );
 }
