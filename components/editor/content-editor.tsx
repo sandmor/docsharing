@@ -190,13 +190,15 @@ export default function ContentEditor({
             <CodeActionMenuPlugin anchorElem={floatingAnchorElemRef.current} />
           </>
         )}
+        {floatingAnchorElemRef.current && (
+          <FloatingLinkEditorPlugin
+            anchorElem={floatingAnchorElemRef.current}
+            isLinkEditMode={isLinkEditMode}
+            setIsLinkEditMode={setIsLinkEditMode}
+          />
+        )}
         {floatingAnchorElemRef.current && !isMobile && (
           <>
-            <FloatingLinkEditorPlugin
-              anchorElem={floatingAnchorElemRef.current}
-              isLinkEditMode={isLinkEditMode}
-              setIsLinkEditMode={setIsLinkEditMode}
-            />
             <FloatingTextFormatToolbarPlugin
               anchorElem={floatingAnchorElemRef.current}
               setIsLinkEditMode={setIsLinkEditMode}
