@@ -9,7 +9,7 @@ import { toast } from "sonner";
 export default function AutoSaveObserver() {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
-  const { documentId, currentState, isSaved, updateSavedState } =
+  const { documentId, currentState, isSaved, updateSavedState, isInitializing } =
     useEditorStore();
 
   const setDocumentMutation = useMutation({
@@ -40,17 +40,18 @@ export default function AutoSaveObserver() {
 
   // Debounced save effect
   useEffect(() => {
-    if (isSaved) {
+    if (isSaved || isInitializing) {
       return;
     }
 
     const timerId = setTimeout(() => {
-      if (!documentId) {
+      const currentDocId = documentId; // capture
+      if (!currentDocId) {
         console.error("No document ID set.");
         return;
       }
       setDocumentMutation.mutate({
-        id: documentId,
+        id: currentDocId,
         title: currentState.title,
         content: currentState.markdownContent,
       });
@@ -59,7 +60,7 @@ export default function AutoSaveObserver() {
     return () => {
       clearTimeout(timerId);
     };
-  }, [currentState, documentId, isSaved, setDocumentMutation]);
+  }, [currentState, documentId, isSaved, isInitializing, setDocumentMutation]);
 
   // Save on unload or client-side navigation
   useEffect(() => {

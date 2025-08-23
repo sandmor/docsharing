@@ -219,11 +219,9 @@ function Toolbar({
 
 export default function ToolbarPlugin({
   scrollerRef,
-  floatingRef,
   position,
 }: {
   scrollerRef?: React.RefObject<HTMLDivElement | null>;
-  floatingRef?: React.RefObject<HTMLDivElement | null>;
   position: "top" | "bottom";
 }): JSX.Element | null {
   const [editor] = useLexicalComposerContext();
@@ -342,7 +340,7 @@ export default function ToolbarPlugin({
         canUndo={canUndo}
         canRedo={canRedo}
         openLinkEditor={openLinkEditor}
-        scrollOffset={position === "top" ? scrollOffset : 0}
+        scrollOffset={0}
         position={position}
       />
       <LinkEditorDialog

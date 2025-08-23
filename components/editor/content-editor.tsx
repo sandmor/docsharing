@@ -148,9 +148,9 @@ export default function ContentEditor({
     ],
   };
 
-  return (<div className="p-4">
+  return (<div className="p-4 min-h-full">
     <div
-      className="border border-gray-300 rounded-lg flex-1 flex flex-col"
+      className="min-h-full border border-gray-300 rounded-lg flex-1 flex flex-col"
       style={lexicalCodeThemeVarsAuto}
     >
       <LexicalComposer initialConfig={initialConfig}>
@@ -168,7 +168,7 @@ export default function ContentEditor({
           />
         </div>
         {isSmallScreen && (
-          <ToolbarPlugin scrollerRef={scrollerRef} floatingRef={floatingAnchorElemRef} position="bottom" />
+          <ToolbarPlugin scrollerRef={scrollerRef} position="bottom" />
         )}
         <HistoryPlugin />
         <LinkPlugin

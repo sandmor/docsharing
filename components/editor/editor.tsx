@@ -1,7 +1,7 @@
 "use client";
 
 import { useEditorStore } from "@/lib/hooks/useEditorStore";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import ContentEditor from "./content-editor";
 import AutoSaveObserver from "@/components/editor/auto-save-observer";
 import { useTRPC } from "@/lib/trpc/client";
@@ -18,39 +18,34 @@ export default function Editor({ documentId }: EditorProps) {
     staleTime: Infinity,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
-    refetchOnMount: false,
   });
-  const title = document?.title || "";
-  const initialContent = document?.content || "";
 
-  const { setDocumentId, setTitle, setMarkdownContent, updateSavedState } =
-    useEditorStore();
+  const {
+    beginDocumentSwitch,
+    applyInitialContent,
+    loadVersion,
+    documentId: activeId,
+  } = useEditorStore();
+  const [localVersion, setLocalVersion] = useState<number | null>(null);
 
   const scrollerRef = useRef<HTMLDivElement>(null);
 
+  // Begin switch when docId param changes
   useEffect(() => {
-    setDocumentId(documentId);
-    if (title) {
-      setTitle(title);
-    }
-    if (initialContent) {
-      setMarkdownContent(initialContent);
-    }
-    updateSavedState({
-      title,
-      markdownContent: initialContent,
-    });
-  }, [documentId, setDocumentId]);
+    const v = beginDocumentSwitch(documentId);
+    setLocalVersion(v);
+  }, [documentId, beginDocumentSwitch]);
 
+  // Apply server-fetched data (guarded by version)
   useEffect(() => {
-    if (title) {
-      setTitle(title);
-    }
-    updateSavedState((prev) => ({
-      ...prev,
-      title,
-    }));
-  }, [title]);
+    if (!document || localVersion == null) return;
+    applyInitialContent({
+      documentId,
+      version: localVersion,
+      title: document.title || "",
+      markdownContent: document.content || "",
+    });
+  }, [document, localVersion, applyInitialContent, documentId]);
 
   return (
     <div
@@ -58,8 +53,9 @@ export default function Editor({ documentId }: EditorProps) {
       ref={scrollerRef}
     >
       <ContentEditor
+        key={`${documentId}:${loadVersion}`}
         documentId={documentId}
-        initialContent={initialContent}
+        initialContent={document?.content || ""}
         scrollerRef={scrollerRef}
       />
       <AutoSaveObserver />

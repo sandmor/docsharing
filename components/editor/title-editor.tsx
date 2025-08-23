@@ -6,12 +6,13 @@ import { useTRPC } from "@/lib/trpc/client";
 import { useQueryClient } from "@tanstack/react-query";
 
 export default function TitleEditor() {
-  const { currentState, setTitle, documentId } = useEditorStore();
+  const { currentState, setTitle, documentId, isInitializing } = useEditorStore();
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (isInitializing) return; // ignore during init
       const newTitle = e.target.value;
       setTitle(newTitle);
 
@@ -36,7 +37,7 @@ export default function TitleEditor() {
         });
       }
     },
-    [setTitle, documentId, trpc, queryClient]
+    [setTitle, documentId, trpc, queryClient, isInitializing]
   );
 
   if (!currentState) {
